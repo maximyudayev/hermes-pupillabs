@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pysio-hermes-pupillabs"
-version = "0.0.1"
+dynamic = ["version"]
 requires-python = ">=3.7"
 authors = [
   { name="Maxim Yudayev", email="maxim.yudayev@gmail.com" },
@@ -31,6 +31,9 @@ classifiers = [
 dependencies = [
   "pysio-hermes",
 ]
+
+[tool.setuptools.dynamic]
+version = {attr = "hermes.pupillabs.__version__.__version__"}
 
 [project.urls]
 Homepage = "https://maximyudayev.github.io/hermes"
