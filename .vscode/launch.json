@@ -13,7 +13,25 @@
       "args": [
         "--experiment", "project=Test", "type=PupilCore", "trial=0",
         "--config_file", "examples/pupilcore.yml",
-        "--out_dir", "examples/"
+        "--out_dir", "examples/data"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Local PupilUvc",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": "examples/main.py",
+      "args": [
+        "--experiment", "project=Test", "type=PupilUvc", "trial=0",
+        "--config_file", "examples/pupiluvc.yml",
+        "--out_dir", "examples/data"
       ],
       "env": {
         "PYTHONPATH": "${workspaceFolder}"

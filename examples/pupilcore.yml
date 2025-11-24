@@ -1,6 +1,6 @@
 ############
 #
-# Copyright (c) 2024 Maxim Yudayev and KU Leuven eMedia Lab
+# Copyright (c) 2024-2025 Maxim Yudayev and KU Leuven eMedia Lab
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -49,11 +49,8 @@ logging_spec:
   dump_video          : False
   dump_audio          : False
 
-  video_codec_config_filepath : "example/video_codec.yml" 
-  video_codec_num_cpu : 1
-
-  audio_codec_config_filepath : "example/audio_codec.yml" 
-  audio_codec_num_cpu : 1
+video_codec_config_filepath : "examples/video_codec.yml"
+audio_codec_config_filepath : "examples/audio_codec.yml"
 
 
 producer_specs:
@@ -62,11 +59,11 @@ producer_specs:
     settings:
       pupil_capture_ip        : "localhost"
       pupil_capture_port      : "50020"
-      video_image_format      : "jpeg"
+      video_image_format      : "JPEG"
       gaze_estimate_stale_s   : 0.2
       is_binocular            : True # uses both eyes for gaze data and for video.
       is_stream_video_world   : True
-      is_stream_video_eye     : False
+      is_stream_video_eye     : True
       is_stream_fixation      : True
       is_stream_blinks        : True
       shape_video_world: 
