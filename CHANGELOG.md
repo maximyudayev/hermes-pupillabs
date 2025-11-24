@@ -8,5 +8,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## HERMES Pupil Labs
 
+### 0.0.2 <small>November 24, 2025</small>
+- Support for UVC-based interface to the smartglasses for stable video capture.
+
 ### 0.0.1 <small>October 21, 2025</small>
 - Initial public release of an optional Pupil Labs Core smartglasses HERMES package.

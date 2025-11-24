@@ -27,14 +27,14 @@
 
 from typing import Callable
 
-from hermes.utils.types import VideoFormatEnum
 import uvc
 from multiprocessing import Process, Queue, Event
 from queue import Empty
 import time
 
 from hermes.utils.zmq_utils import PORT_BACKEND, PORT_SYNC_HOST, PORT_KILL
-from hermes.utils.time_utils import get_time
+from hermes.utils.time_utils import get_time, init_time
+from hermes.utils.types import VideoFormatEnum, LoggingSpec
 
 from hermes.base.nodes.producer import Producer
 from hermes.pupillabs.uvc.stream import PupilUvcStream
@@ -63,6 +63,7 @@ def _get_frame(
 
 
 def _run_capture(
+    ref_time_s: float,
     camera_name: str,
     camera_spec: dict,
     queue: Queue,
@@ -70,6 +71,7 @@ def _run_capture(
     stop_event,
     keep_event,
 ):
+    init_time(ref_time_s)
     devices = dict(map(lambda dev: (dev["name"], dev["uid"]), uvc.device_list()))
 
     cap = uvc.Capture(devices[camera_spec["name"]])
@@ -122,7 +124,7 @@ class PupilUvcProducer(Producer):
         self,
         host_ip: str,
         camera_mapping: dict,
-        logging_spec: dict,
+        logging_spec: LoggingSpec,
         video_image_format: VideoFormatEnum = VideoFormatEnum.MJPEG,
         port_pub: str = PORT_BACKEND,
         port_sync: str = PORT_SYNC_HOST,
@@ -143,7 +145,7 @@ class PupilUvcProducer(Producer):
         self._stop_event = Event()
         self._keep_event = Event()
 
-        stream_info = {
+        stream_out_spec = {
             "camera_mapping": self._camera_mapping,
             "pixel_format": video_image_format,
             "timesteps_before_solidified": timesteps_before_solidified,
@@ -151,7 +153,7 @@ class PupilUvcProducer(Producer):
 
         super().__init__(
             host_ip=host_ip,
-            stream_info=stream_info,
+            stream_out_spec=stream_out_spec,
             logging_spec=logging_spec,
             port_pub=port_pub,
             port_sync=port_sync,
@@ -173,6 +175,7 @@ class PupilUvcProducer(Producer):
             proc = Process(
                 target=_run_capture,
                 args=(
+                    self._ref_time_s,
                     cam,
                     self._camera_mapping[cam],
                     self._cap_queue,

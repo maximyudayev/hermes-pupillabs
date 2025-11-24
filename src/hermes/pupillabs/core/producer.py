@@ -25,10 +25,10 @@
 #
 # ############
 
-from hermes.utils.types import LoggingSpec, VideoFormatEnum
 import zmq
 
 from hermes.base.nodes.producer import Producer
+from hermes.utils.types import LoggingSpec, VideoFormatEnum
 from hermes.utils.zmq_utils import (
     DNS_LOCALHOST,
     PORT_EYE,
