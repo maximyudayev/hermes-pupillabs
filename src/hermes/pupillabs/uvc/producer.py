@@ -25,94 +25,18 @@
 #
 # ############
 
-from typing import Callable
-
-import uvc
 from multiprocessing import Process, Queue, Event
 from queue import Empty
-import time
 
+from hermes.utils.mp_utils import launch_callable
 from hermes.utils.zmq_utils import PORT_BACKEND, PORT_SYNC_HOST, PORT_KILL
-from hermes.utils.time_utils import get_time, init_time
+from hermes.utils.time_utils import get_time
 from hermes.utils.types import VideoFormatEnum, LoggingSpec
 
 from hermes.base.nodes.producer import Producer
-from hermes.pupillabs.uvc.stream import PupilUvcStream
 
-
-def _get_frame(
-    camera_name: str, cap: uvc.Capture, queue: Queue, get_buffer_fn: Callable
-) -> None:
-    try:
-        frame = cap.get_frame(timeout=5)
-        toa_s = get_time()
-        out = {
-            "timestamp": frame.timestamp,
-            "index": frame.index,
-            "data": get_buffer_fn(frame),
-        }
-        queue.put((camera_name, out, toa_s))
-    except TimeoutError:
-        pass
-    except uvc.InitError as err:
-        print(f"[PupilUvcProducer] Failed to init {camera_name}: {err}", flush=True)
-        pass
-    except uvc.StreamError as err:
-        print(f"[PupilUvcProducer] Stream error for {camera_name}: {err}", flush=True)
-        pass
-
-
-def _run_capture(
-    ref_time_s: float,
-    camera_name: str,
-    camera_spec: dict,
-    queue: Queue,
-    video_image_format: VideoFormatEnum,
-    stop_event,
-    keep_event,
-):
-    init_time(ref_time_s)
-    devices = dict(map(lambda dev: (dev["name"], dev["uid"]), uvc.device_list()))
-
-    cap = uvc.Capture(devices[camera_spec["name"]])
-    cap.bandwidth_factor = camera_spec["bandwidth_factor"]
-
-    for mode in cap.available_modes:
-        if (
-            mode.width == camera_spec["resolution"][1]
-            and mode.height == camera_spec["resolution"][0]
-            and mode.fps == camera_spec["fps"]
-        ):
-            cap.frame_mode = mode
-            break
-        # configure the controls on each `Capture` object (exposure, brightness, sharpness, etc)
-        controls_by_name = {c.display_name: c for c in cap.controls}
-
-    print(f"Settings controls for {camera_spec['name']}", flush=True)
-    for ctrl_name, value in camera_spec.get("uvc_controls", {}).items():
-        ctrl = controls_by_name.get(ctrl_name)
-        try:
-            ctrl.value = value
-        except Exception as e:
-            print(
-                f"Could not set control for {camera_spec['name']} '{ctrl_name}' to {value}: {e}"
-            )
-
-    if video_image_format == VideoFormatEnum.MJPEG:
-        get_buffer_fn = lambda frame: bytes(frame.jpeg_buffer)
-    elif video_image_format == VideoFormatEnum.BGR:
-        get_buffer_fn = lambda frame: frame.bgr
-    elif video_image_format == VideoFormatEnum.YUV:
-        get_buffer_fn = lambda frame: frame.yuv
-    else:
-        get_buffer_fn = lambda _: None
-
-    while not stop_event.is_set():
-        if not keep_event.is_set():
-            time.sleep(0.01)
-            continue
-        _get_frame(camera_name, cap, queue, get_buffer_fn)
-    cap.close()
+from .stream import PupilUvcStream
+from .handler import PupilUvcHandler
 
 
 class PupilUvcProducer(Producer):
@@ -133,7 +57,6 @@ class PupilUvcProducer(Producer):
         timesteps_before_solidified: int = 0,
         **_,
     ):
-
         self._camera_mapping = camera_mapping
         self._video_image_format = video_image_format
         self._is_continue_grabbing = True
@@ -142,6 +65,8 @@ class PupilUvcProducer(Producer):
         )
         self._parse_frame_fn = self._parse_first_frame
         self._cap_queue: Queue = Queue()
+        self._cap_procs: list[Process] = []
+        self._cap_handlers: list[PupilUvcHandler] = []
         self._stop_event = Event()
         self._keep_event = Event()
 
@@ -169,12 +94,15 @@ class PupilUvcProducer(Producer):
         return None
 
     def _connect(self) -> bool:
-        self._cap_procs: list[Process] = []
         # launch each capture subprocess
+        ready_events: list[Event] = []
         for cam in self._camera_mapping.keys():
+            handler = PupilUvcHandler()
+            ready_event = Event()
             proc = Process(
-                target=_run_capture,
+                target=launch_callable,
                 args=(
+                    handler,
                     self._ref_time_s,
                     cam,
                     self._camera_mapping[cam],
@@ -182,12 +110,16 @@ class PupilUvcProducer(Producer):
                     self._video_image_format,
                     self._stop_event,
                     self._keep_event,
-                ),
+                    ready_event,
+                )
             )
             self._cap_procs.append(proc)
+            self._cap_handlers.append(handler)
+            ready_events.append(ready_event)
             proc.start()
-        # TODO: read their pipe with confirmation that each connected to the camera
-        # NOTE: for now will immediately start producing data
+
+        # read their pipe with confirmation that each connected to the camera
+        for event in ready_events: event.wait()
         return True
 
     def _keep_samples(self) -> None:
@@ -196,17 +128,14 @@ class PupilUvcProducer(Producer):
     def _process_data(self) -> None:
         try:
             msg = self._cap_queue.get(timeout=10)
+            process_time_s = get_time()
+            output = self._parse_frame_fn(msg)
+            if output is not None:
+                tag: str = "%s.data" % self._log_source_tag()
+                self._publish(tag, process_time_s=process_time_s, data=output)
         except Empty:
             if not self._is_continue_capture:
                 self._send_end_packet()
-            return
-
-        process_time_s = get_time()
-        output = self._parse_frame_fn(msg)
-        if output is None:
-            return
-        tag: str = "%s.data" % self._log_source_tag()
-        self._publish(tag, process_time_s=process_time_s, data=output)
 
     def _parse_first_frame(self, msg: tuple) -> dict:
         camera_name, frame, toa_s = msg

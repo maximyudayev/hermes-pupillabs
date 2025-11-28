@@ -128,7 +128,7 @@ producer_specs:
             - 3
           bandwidth_factor: 1.0
           uvc_controls:
-            Auto Exposure Mode: 1
+            Auto Exposure Mode: 8
             Auto Exposure Priority: 1
             Absolute Exposure Time: 240
             Backlight Compensation: 1

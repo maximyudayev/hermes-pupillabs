@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## HERMES Pupil Labs
 
+### 0.0.3 <small>November 28, 2025</small>
+- UVC module auto reconnects on internal faults and accidental cable unplugs.
+
 ### 0.0.2 <small>November 24, 2025</small>
 - Support for UVC-based interface to the smartglasses for stable video capture.
 
