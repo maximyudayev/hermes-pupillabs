@@ -23,13 +23,14 @@ Interfaces cameras directly using [pyuvc](https://github.com/pupil-labs/pyuvc). 
 
 #### Pros
 * Full stable frame rate
+* Safe against accidental cable disconnection (just plug back in)
 * Low resource utilization
 * Cross-platform
 * Constrained device friendly
 * Flexibility to add own realtime algorithms
 
 #### Cons
-* Doesn't provide out-of-the-box GUI
+* Doesn't provide out-of-the-box GUI for camera lighting settings
 * Requires custom realtime algorithms if gaze data is desired
 
 ## Installation
