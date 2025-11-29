@@ -8,6 +8,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## HERMES Pupil Labs
 
+### 0.0.4 <small>November 29, 2025</small>
+- Bugfix: fails to assign camera lighting parameters.
+
 ### 0.0.3 <small>November 28, 2025</small>
 - UVC module auto reconnects on internal faults and accidental cable unplugs.
 
