@@ -63,6 +63,7 @@ class PupilUvcStream(Stream):
                 is_measure_rate_hz=True,
                 is_video=True,
                 color_format=self._pixel_format,
+                video_bitrate=camera_spec['bitrate'],
                 timesteps_before_solidified=self._timesteps_before_solidified,
             )
             self.add_stream(

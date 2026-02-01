@@ -34,7 +34,7 @@
         "--out_dir", "examples/data"
       ],
       "env": {
-        "PYTHONPATH": "${workspaceFolder}"
+        "PYTHONPATH": "${workspaceFolder}",
       },
       "console": "integratedTerminal",
       "subProcess": true,

@@ -27,8 +27,10 @@
 
 import time
 from typing import Callable
+import numpy as np
 import uvc
-from multiprocessing import Queue, Event
+from multiprocessing import Queue
+from multiprocessing.synchronize import Event as _Event
 
 from hermes.utils.time_utils import get_time, init_time
 from hermes.utils.types import VideoFormatEnum
@@ -42,9 +44,9 @@ class PupilUvcHandler:
         camera_spec: dict,
         queue: Queue,
         video_image_format: VideoFormatEnum,
-        stop_event: Event,
-        keep_event: Event,
-        ready_event: Event,
+        stop_event: _Event,
+        keep_event: _Event,
+        ready_event: _Event,
     ):
         init_time(ref_time_s)
         self.camera_name = camera_name
@@ -54,12 +56,8 @@ class PupilUvcHandler:
 
         self._restart_cap_device()
 
-        if video_image_format == VideoFormatEnum.MJPEG:
-            get_buffer_fn = lambda frame: bytes(frame.jpeg_buffer)
-        elif video_image_format == VideoFormatEnum.BGR:
-            get_buffer_fn = lambda frame: frame.bgr
-        elif video_image_format == VideoFormatEnum.YUV:
-            get_buffer_fn = lambda frame: frame.yuv
+        if video_image_format == VideoFormatEnum.YUV:
+            get_buffer_fn = lambda frame: np.concatenate([x.reshape(-1) for x in frame.yuv420]).tobytes()
         else:
             get_buffer_fn = lambda _: None
 

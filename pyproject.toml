@@ -30,6 +30,7 @@ classifiers = [
 ]
 dependencies = [
   "pysio-hermes",
+  "numpy<2.0,
   "pupil-labs-uvc",
 ]
 
