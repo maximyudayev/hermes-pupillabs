@@ -26,6 +26,7 @@
 # ############
 
 from multiprocessing import Process, Queue, Event
+from multiprocessing.synchronize import Event as _Event
 from queue import Empty
 
 from hermes.utils.mp_utils import launch_callable
@@ -95,7 +96,7 @@ class PupilUvcProducer(Producer):
 
     def _connect(self) -> bool:
         # launch each capture subprocess
-        ready_events: list[Event] = []
+        ready_events: list[_Event] = []
         for cam in self._camera_mapping.keys():
             handler = PupilUvcHandler()
             ready_event = Event()
