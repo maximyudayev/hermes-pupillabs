@@ -30,7 +30,6 @@ classifiers = [
 ]
 dependencies = [
   "pysio-hermes>=0.3.0",
-  "pupil-labs-uvc",
 ]
 
 [project.urls]

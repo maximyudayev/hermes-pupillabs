@@ -37,7 +37,7 @@ class PupilUvcStream(Stream):
     def __init__(
         self,
         camera_mapping: dict[str, str],
-        pixel_format: VideoFormatEnum,
+        video_image_format: VideoFormatEnum | str,
         timesteps_before_solidified: int = 0,
         update_interval_ms: int = 100,
         **_
@@ -45,7 +45,7 @@ class PupilUvcStream(Stream):
         super().__init__()
 
         self._camera_mapping = camera_mapping
-        self._pixel_format = pixel_format
+        self._video_image_format = video_image_format if isinstance(video_image_format, VideoFormatEnum) else VideoFormatEnum[video_image_format]
         self._update_interval_ms = update_interval_ms
         self._timesteps_before_solidified = timesteps_before_solidified
 
@@ -62,7 +62,7 @@ class PupilUvcStream(Stream):
                 data_notes=self._data_notes[camera_name]["frame"],
                 is_measure_rate_hz=True,
                 is_video=True,
-                color_format=self._pixel_format,
+                color_format=self._video_image_format,
                 timesteps_before_solidified=self._timesteps_before_solidified,
             )
             self.add_stream(

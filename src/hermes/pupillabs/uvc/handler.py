@@ -28,7 +28,8 @@
 import time
 from typing import Callable
 import uvc
-from multiprocessing import Queue, Event
+from multiprocessing import Queue
+from multiprocessing.synchronize import Event as _Event
 
 from hermes.utils.time_utils import get_time, init_time
 from hermes.utils.types import VideoFormatEnum
@@ -42,9 +43,9 @@ class PupilUvcHandler:
         camera_spec: dict,
         queue: Queue,
         video_image_format: VideoFormatEnum,
-        stop_event: Event,
-        keep_event: Event,
-        ready_event: Event,
+        stop_event: _Event,
+        keep_event: _Event,
+        ready_event: _Event,
     ):
         init_time(ref_time_s)
         self.camera_name = camera_name
