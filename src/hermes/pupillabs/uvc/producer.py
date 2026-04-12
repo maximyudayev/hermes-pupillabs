@@ -73,7 +73,7 @@ class PupilUvcProducer(Producer):
 
         stream_out_spec = {
             "camera_mapping": self._camera_mapping,
-            "pixel_format": video_image_format,
+            "video_image_format": video_image_format,
             "timesteps_before_solidified": timesteps_before_solidified,
         }
 

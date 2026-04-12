@@ -30,7 +30,6 @@ classifiers = [
 ]
 dependencies = [
   "pysio-hermes",
-  "pupil-labs-uvc",
 ]
 
 [tool.setuptools.dynamic]
