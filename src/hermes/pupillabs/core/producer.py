@@ -47,12 +47,9 @@ from hermes.pupillabs.core.stream import PupilCoreStream
 class PupilCoreProducer(Producer):
     """A class to interface with the Pupil Labs eye tracker."""
 
-    @classmethod
-    def _log_source_tag(cls) -> str:
-        return "eye"
-
     def __init__(
         self,
+        topic: str,
         host_ip: str,
         logging_spec: LoggingSpec,
         pupil_capture_ip: str = DNS_LOCALHOST,
@@ -108,6 +105,7 @@ class PupilCoreProducer(Producer):
         }
 
         super().__init__(
+            topic=topic,
             host_ip=host_ip,
             stream_out_spec=stream_out_spec,
             logging_spec=logging_spec,
@@ -146,7 +144,7 @@ class PupilCoreProducer(Producer):
         res = self._handler.process_data()
         if res is not None:
             process_time_s, data = res
-            tag: str = "%s.data" % self._log_source_tag()
+            tag: str = "%s.data" % self.topic
             self._publish(tag, process_time_s=process_time_s, data=data)
         elif not self._is_continue_capture:
             self._send_end_packet()

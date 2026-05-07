@@ -1,3 +1,3 @@
 #!/bin/sh
-. ../.venv/bin/activate
-hermes-cli -o ./data --config_file pupiluvc.yml --experiment project=Test type=PupilUvc trial=0
+source .venv/bin/activate
+hermes-cli -o ./data --config_file ./examples/pupiluvc.yml --experiment project=Test type=PupilUvc trial=0

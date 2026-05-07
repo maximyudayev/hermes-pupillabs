@@ -41,12 +41,9 @@ from .handler import PupilUvcHandler
 
 
 class PupilUvcProducer(Producer):
-    @classmethod
-    def _log_source_tag(cls) -> str:
-        return "glasses"
-
     def __init__(
         self,
+        topic: str,
         host_ip: str,
         camera_mapping: dict,
         logging_spec: LoggingSpec,
@@ -78,6 +75,7 @@ class PupilUvcProducer(Producer):
         }
 
         super().__init__(
+            topic=topic,
             host_ip=host_ip,
             stream_out_spec=stream_out_spec,
             logging_spec=logging_spec,
@@ -132,7 +130,7 @@ class PupilUvcProducer(Producer):
             process_time_s = get_time()
             output = self._parse_frame_fn(msg)
             if output is not None:
-                tag: str = "%s.data" % self._log_source_tag()
+                tag: str = "%s.data" % self.topic
                 self._publish(tag, process_time_s=process_time_s, data=output)
         except Empty:
             if not self._is_continue_capture:
