@@ -1,3 +1,12 @@
 #!/bin/sh
 source .venv/bin/activate
-hermes-cli -o ./data --config_file ./examples/pupiluvc.yml --experiment project=Test type=PupilUvc trial=0
+
+if [ -f "$FILE" ]; then
+    trial_id=$(cat "$FILE")
+else
+    trial_id=0
+fi
+trial_id=$((trial_id + 1))
+echo "$trial_id" > "$FILE"
+
+hermes-cli -o ./data --config_file ./examples/pupiluvc.yml --experiment project=Test type=PupilUvc trial=$trial_d
