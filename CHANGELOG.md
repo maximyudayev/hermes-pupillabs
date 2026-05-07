@@ -8,6 +8,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## HERMES Pupil Labs
 <!-- insertion marker -->
+## [0.1.1](https://github.com/maximyudayev/hermes-pupillabs/releases/tag/0.1.1) - 2026-05-07
+
+<small>[Compare with 0.1.0](https://github.com/maximyudayev/hermes-pupillabs/compare/0.1.0...0.1.1)</small>
+
+### Bug Fixes
+
+- Pipeline nodes can't construct modality ([c587355](https://github.com/maximyudayev/hermes-pupillabs/commit/c587355081f47c580d58cf787d5b5c5f76ed8532) by Maxim Yudayev).
+
 ## [0.1.0](https://github.com/maximyudayev/hermes-pupillabs/releases/tag/0.1.0) - 2026-05-07
 
 <small>[Compare with first commit](https://github.com/maximyudayev/hermes-pupillabs/compare/b2b0d30314aaab8f752550741171b5be46f3ff30...0.1.0)</small>
