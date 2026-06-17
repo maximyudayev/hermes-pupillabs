@@ -59,11 +59,12 @@ producer_specs:
     class: "PupilUvcProducer"
     topic: "smartglasses_uvc"
     settings:
-      video_image_format: "MJPEG"
+      video_image_format: "BGR"
       camera_mapping:
         left_eye:
           name: "Pupil Cam2 ID0"
           fps: 120
+          buf_len: 10000
           resolution:
             - 400
             - 400
@@ -94,6 +95,7 @@ producer_specs:
         right_eye:
           name: "Pupil Cam2 ID1"
           fps: 120
+          buf_len: 10000
           resolution:
             - 400
             - 400
@@ -124,6 +126,7 @@ producer_specs:
         ego:
           name: "Pupil Cam1 ID2"
           fps: 30
+          buf_len: 3000
           resolution:
             - 720
             - 1280

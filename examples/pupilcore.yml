@@ -61,7 +61,7 @@ producer_specs:
     settings:
       pupil_capture_ip        : "localhost"
       pupil_capture_port      : "50020"
-      video_image_format      : "JPEG"
+      video_image_format      : "BGR"
       gaze_estimate_stale_s   : 0.2
       is_binocular            : True # uses both eyes for gaze data and for video.
       is_stream_video_world   : True
@@ -83,6 +83,7 @@ producer_specs:
       fps_video_world       : 30.0
       fps_video_eye0        : 120.0
       fps_video_eye1        : 120.0
+      buf_len: 10000
 
 
 consumer_specs: []

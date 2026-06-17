@@ -26,6 +26,7 @@
 # ############
 
 from collections import OrderedDict
+from typing import Optional
 
 from hermes.base.stream import Stream
 from hermes.utils.types import VideoFormatEnum
@@ -49,8 +50,9 @@ class PupilCoreStream(Stream):
         fps_video_eye0: float,
         fps_video_eye1: float,
         pixel_format: VideoFormatEnum,
-        timesteps_before_solidified: int = 0,
-        update_interval_ms: int = 100,
+        buf_len: Optional[int] = 10000,
+        timesteps_before_solidified: Optional[int] = 0,
+        update_interval_ms: Optional[int] = 100,
         **_
     ) -> None:
         super().__init__()
@@ -76,9 +78,18 @@ class PupilCoreStream(Stream):
             device_name="eye-time",
             stream_name="device_time_s",
             data_type="float64",
-            sample_size=(1,),
+            sample_size=[1],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-time"]["device_time_s"],
+        )
+        self.add_stream(
+            device_name="eye-time",
+            stream_name="toa_s",
+            data_type="float64",
+            sample_size=[1],
+            buf_len=buf_len,
+            sampling_rate_hz=fps_video_world,
         )
 
         # Create streams for gaze data.
@@ -86,7 +97,7 @@ class PupilCoreStream(Stream):
             device_name="eye-gaze",
             stream_name="confidence",
             data_type="float64",
-            sample_size=(1,),
+            sample_size=[1],
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-gaze"]["confidence"],
         )
@@ -94,7 +105,8 @@ class PupilCoreStream(Stream):
             device_name="eye-gaze",
             stream_name="eye_center_3d",
             data_type="float64",
-            sample_size=(2, 3),
+            sample_size=[2, 3],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-gaze"]["eye_center_3d"],
         )
@@ -102,7 +114,8 @@ class PupilCoreStream(Stream):
             device_name="eye-gaze",
             stream_name="normal_3d",
             data_type="float64",
-            sample_size=(2, 3),
+            sample_size=[2, 3],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-gaze"]["normal_3d"],
         )
@@ -110,7 +123,8 @@ class PupilCoreStream(Stream):
             device_name="eye-gaze",
             stream_name="point_3d",
             data_type="float64",
-            sample_size=(3,),
+            sample_size=[3],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-gaze"]["point_3d"],
         )
@@ -118,7 +132,8 @@ class PupilCoreStream(Stream):
             device_name="eye-gaze",
             stream_name="position",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-gaze"]["position"],
         )
@@ -126,7 +141,8 @@ class PupilCoreStream(Stream):
             device_name="eye-gaze",
             stream_name="timestamp",
             data_type="float64",
-            sample_size=(1,),
+            sample_size=[1],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             is_measure_rate_hz=True,
             data_notes=self._data_notes["eye-gaze"]["timestamp"],
@@ -137,7 +153,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="confidence",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["confidence"],
         )
@@ -145,7 +162,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="circle3d_center",
             data_type="float64",
-            sample_size=(2, 3),
+            sample_size=[2, 3],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["circle3d_center"],
         )
@@ -153,7 +171,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="circle3d_normal",
             data_type="float64",
-            sample_size=(2, 3),
+            sample_size=[2, 3],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["circle3d_normal"],
         )
@@ -161,7 +180,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="circle3d_radius",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["circle3d_radius"],
         )
@@ -169,7 +189,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="diameter",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["diameter"],
         )
@@ -177,7 +198,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="diameter3d",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["diameter3d"],
         )
@@ -185,7 +207,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="polar_phi",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["polar_phi"],
         )
@@ -193,7 +216,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="polar_theta",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["polar_theta"],
         )
@@ -201,7 +225,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="position",
             data_type="float64",
-            sample_size=(2, 2),
+            sample_size=[2, 2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["position"],
         )
@@ -209,7 +234,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="projected_sphere_angle",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["projected_sphere_angle"],
         )
@@ -217,7 +243,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="projected_sphere_axes",
             data_type="float64",
-            sample_size=(2, 2),
+            sample_size=[2, 2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["projected_sphere_axes"],
         )
@@ -225,7 +252,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="projected_sphere_center",
             data_type="float64",
-            sample_size=(2, 2),
+            sample_size=[2, 2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["projected_sphere_center"],
         )
@@ -233,7 +261,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="sphere_center",
             data_type="float64",
-            sample_size=(2, 3),
+            sample_size=[2, 3],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["sphere_center"],
         )
@@ -241,7 +270,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="sphere_radius",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             data_notes=self._data_notes["eye-pupil"]["sphere_radius"],
         )
@@ -249,7 +279,8 @@ class PupilCoreStream(Stream):
             device_name="eye-pupil",
             stream_name="timestamp",
             data_type="float64",
-            sample_size=(2,),
+            sample_size=[2],
+            buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             is_measure_rate_hz=True,
             data_notes=self._data_notes["eye-pupil"]["timestamp"],
@@ -260,50 +291,57 @@ class PupilCoreStream(Stream):
             self.add_stream(
                 device_name="eye-fixations",
                 stream_name="id",
-                data_type="int32",
-                sample_size=(1,),
+                data_type="uint64",
+                sample_size=[2],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-fixations"]["id"],
             )
             self.add_stream(
                 device_name="eye-fixations",
                 stream_name="timestamp",
                 data_type="float64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-fixations"]["timestamp"],
             )
             self.add_stream(
                 device_name="eye-fixations",
                 stream_name="norm_pos",
-                data_type="float32",
-                sample_size=(2,),
+                data_type="float64",
+                sample_size=[2],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-fixations"]["norm_pos"],
             )
             self.add_stream(
                 device_name="eye-fixations",
                 stream_name="dispersion",
-                data_type="float32",
-                sample_size=(1,),
+                data_type="float64",
+                sample_size=[1],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-fixations"]["dispersion"],
             )
             self.add_stream(
                 device_name="eye-fixations",
                 stream_name="duration",
-                data_type="float32",
-                sample_size=(1,),
+                data_type="float64",
+                sample_size=[1],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-fixations"]["duration"],
             )
             self.add_stream(
                 device_name="eye-fixations",
                 stream_name="confidence",
-                data_type="float32",
-                sample_size=(1,),
+                data_type="float64",
+                sample_size=[1],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-fixations"]["confidence"],
             )
             self.add_stream(
                 device_name="eye-fixations",
                 stream_name="gaze_point_3d",
-                data_type="float32",
-                sample_size=(3,),
+                data_type="float64",
+                sample_size=[3],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-fixations"]["gaze_point_3d"],
             )
 
@@ -313,14 +351,16 @@ class PupilCoreStream(Stream):
                 device_name="eye-blinks",
                 stream_name="timestamp",
                 data_type="float64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-blinks"]["timestamp"],
             )
             self.add_stream(
                 device_name="eye-blinks",
                 stream_name="confidence",
-                data_type="float32",
-                sample_size=(1,),
+                data_type="float64",
+                sample_size=[1],
+                buf_len=buf_len,
                 data_notes=self._data_notes["eye-blinks"]["confidence"],
             )
 
@@ -330,7 +370,8 @@ class PupilCoreStream(Stream):
                 device_name="eye-video-world",
                 stream_name="frame_timestamp",
                 data_type="float64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_world,
                 data_notes=self._data_notes["eye-video-world"]["frame_timestamp"],
             )
@@ -338,7 +379,8 @@ class PupilCoreStream(Stream):
                 device_name="eye-video-world",
                 stream_name="frame_index",
                 data_type="uint64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_world,
                 data_notes=self._data_notes["eye-video-world"]["frame_index"],
             )
@@ -346,7 +388,8 @@ class PupilCoreStream(Stream):
                 device_name="eye-video-world",
                 stream_name="frame_sequence_id",
                 data_type="uint64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_world,
                 data_notes=self._data_notes["eye-video-world"]["frame_sequence_id"],
             )
@@ -355,6 +398,7 @@ class PupilCoreStream(Stream):
                 stream_name="frame",
                 data_type="uint8",
                 sample_size=shape_video_world,
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_world,
                 data_notes=self._data_notes["eye-video-world"]["frame"],
                 is_measure_rate_hz=True,
@@ -368,7 +412,8 @@ class PupilCoreStream(Stream):
                 device_name="eye-video-eye0",
                 stream_name="frame_timestamp",
                 data_type="float64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_eye0,
                 data_notes=self._data_notes["eye-video-eye0"]["frame_timestamp"],
             )
@@ -376,7 +421,8 @@ class PupilCoreStream(Stream):
                 device_name="eye-video-eye0",
                 stream_name="frame_index",
                 data_type="uint64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_eye0,
                 data_notes=self._data_notes["eye-video-eye0"]["frame_index"],
             )
@@ -384,7 +430,8 @@ class PupilCoreStream(Stream):
                 device_name="eye-video-eye0",
                 stream_name="frame_sequence_id",
                 data_type="uint64",
-                sample_size=(1,),
+                sample_size=[1],
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_eye0,
                 data_notes=self._data_notes["eye-video-eye0"]["frame_sequence_id"],
             )
@@ -393,6 +440,7 @@ class PupilCoreStream(Stream):
                 stream_name="frame",
                 data_type="uint8",
                 sample_size=shape_video_eye0,
+                buf_len=buf_len,
                 sampling_rate_hz=fps_video_eye0,
                 data_notes=self._data_notes["eye-video-eye0"]["frame"],
                 is_measure_rate_hz=True,
@@ -405,7 +453,8 @@ class PupilCoreStream(Stream):
                     device_name="eye-video-eye1",
                     stream_name="frame_timestamp",
                     data_type="float64",
-                    sample_size=(1,),
+                    sample_size=[1],
+                    buf_len=buf_len,
                     sampling_rate_hz=fps_video_eye1,
                     data_notes=self._data_notes["eye-video-eye1"]["frame_timestamp"],
                 )
@@ -413,7 +462,8 @@ class PupilCoreStream(Stream):
                     device_name="eye-video-eye1",
                     stream_name="frame_index",
                     data_type="uint64",
-                    sample_size=(1,),
+                    sample_size=[1],
+                    buf_len=buf_len,
                     sampling_rate_hz=fps_video_eye1,
                     data_notes=self._data_notes["eye-video-eye1"]["frame_index"],
                 )
@@ -421,7 +471,8 @@ class PupilCoreStream(Stream):
                     device_name="eye-video-eye1",
                     stream_name="frame_sequence_id",
                     data_type="uint64",
-                    sample_size=(1,),
+                    sample_size=[1],
+                    buf_len=buf_len,
                     sampling_rate_hz=fps_video_eye1,
                     data_notes=self._data_notes["eye-video-eye1"]["frame_sequence_id"],
                 )
@@ -430,6 +481,7 @@ class PupilCoreStream(Stream):
                     stream_name="frame",
                     data_type="uint8",
                     sample_size=shape_video_eye1,
+                    buf_len=buf_len,
                     sampling_rate_hz=fps_video_eye1,
                     data_notes=self._data_notes["eye-video-eye1"]["frame"],
                     is_measure_rate_hz=True,
@@ -440,10 +492,10 @@ class PupilCoreStream(Stream):
 
     def get_fps(self) -> dict[str, float | None]:
         fps = {
-            "eye-gaze": super()._get_fps("eye-gaze", "timestamp"),
-            "eye-pupil": super()._get_fps("eye-pupil", "timestamp"),
-            "eye-fixations": super()._get_fps("eye-fixations", "timestamp"),
-            "eye-blinks": super()._get_fps("eye-blinks", "timestamp"),
+            "eye-gaze": super()._get_fps("eye-gaze", "toa_s"),
+            "eye-pupil": super()._get_fps("eye-pupil", "toa_s"),
+            "eye-fixations": super()._get_fps("eye-fixations", "toa_s"),
+            "eye-blinks": super()._get_fps("eye-blinks", "toa_s"),
         }
 
         if self._is_stream_video_world:

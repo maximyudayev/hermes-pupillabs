@@ -28,6 +28,7 @@
 from multiprocessing import Process, Queue, Event
 from multiprocessing.synchronize import Event as _Event
 from queue import Empty
+from typing import Optional
 
 from hermes.utils.mp_utils import launch_callable
 from hermes.utils.zmq_utils import PORT_BACKEND, PORT_SYNC_HOST, PORT_KILL
@@ -35,6 +36,7 @@ from hermes.utils.time_utils import get_time
 from hermes.utils.types import VideoFormatEnum, LoggingSpec
 
 from hermes.base.nodes.producer import Producer
+import numpy as np
 
 from .stream import PupilUvcStream
 from .handler import PupilUvcHandler
@@ -47,12 +49,12 @@ class PupilUvcProducer(Producer):
         host_ip: str,
         camera_mapping: dict,
         logging_spec: LoggingSpec,
-        video_image_format: VideoFormatEnum = VideoFormatEnum.MJPEG,
-        port_pub: str = PORT_BACKEND,
-        port_sync: str = PORT_SYNC_HOST,
-        port_killsig: str = PORT_KILL,
-        transmit_delay_sample_period_s: float = float("nan"),
-        timesteps_before_solidified: int = 0,
+        video_image_format: Optional[VideoFormatEnum] = VideoFormatEnum.BGR,
+        port_pub: Optional[str] = PORT_BACKEND,
+        port_sync: Optional[str] = PORT_SYNC_HOST,
+        port_killsig: Optional[str] = PORT_KILL,
+        transmit_delay_sample_period_s: Optional[float] = float("nan"),
+        timesteps_before_solidified: Optional[int] = 0,
         **_,
     ):
         self._camera_mapping = camera_mapping
@@ -150,11 +152,11 @@ class PupilUvcProducer(Producer):
 
         output: dict[str, dict] = {}
         output[camera_name] = {
-            "frame_timestamp": frame["timestamp"],
-            "frame_index": frame_index,
-            "frame_sequence_id": frame["index"],
-            "frame": (frame["data"], False, frame_index),
-            "toa_s": toa_s,
+            "frame_timestamp": np.array([frame["timestamp"]], dtype=np.uint64),
+            "frame_index": np.array([frame_index], dtype=np.uint64),
+            "frame_sequence_id": np.array([frame["index"]], dtype=np.uint64),
+            "frame": frame["data"],
+            "toa_s": np.array([toa_s], dtype=np.float64),
         }
         return output
 
@@ -165,11 +167,11 @@ class PupilUvcProducer(Producer):
 
         output: dict[str, dict] = {}
         output[camera_name] = {
-            "frame_timestamp": frame["timestamp"],
-            "frame_index": frame_index,
-            "frame_sequence_id": frame["index"],
-            "frame": (frame["data"], False, frame_index),
-            "toa_s": toa_s,
+            "frame_timestamp": np.array([frame["timestamp"]], dtype=np.uint64),
+            "frame_index": np.array([frame_index], dtype=np.uint64),
+            "frame_sequence_id": np.array([frame["index"]], dtype=np.uint64),
+            "frame": frame["data"],
+            "toa_s": np.array([toa_s], dtype=np.float64),
         }
         return output
 

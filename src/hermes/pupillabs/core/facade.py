@@ -116,20 +116,23 @@ class PupilFacade:
             poll_res = poller.poll(5)
             if len(poll_res):
                 data = self._receiver.recv_multipart()
-                time_s = get_time()
+                toa_s = get_time()
                 device_time_s = self._get_device_time()
-                self._receive_queue.put((data, time_s, device_time_s))
+                self._receive_queue.put((data, toa_s, device_time_s))
             elif not self._is_more:
                 poller.unregister(self._receiver)
                 is_continue = False
 
     # Receive data and return a parsed dictionary.
-    def process_data(self) -> tuple[float, Mapping[str, Mapping[str, Any]]] | None:
+    def process_data(self) -> Mapping[str, Mapping[str, Any]] | None:
         try:
-            data, time_s, device_time_s = self._receive_queue.get(timeout=5)
+            data, toa_s, device_time_s = self._receive_queue.get(timeout=5)
             topic = data[0].decode("utf-8")
             output: dict[str, dict[str, Any]] = {
-                "eye-time": {"device_time_s": device_time_s}
+                "eye-time": {
+                    "device_time_s": np.array([device_time_s], dtype=np.float64),
+                    "toa_s": np.array([toa_s], dtype=np.float64),
+                }
             }
             # Process gaze/pupil data
             # Note it works for both, mono- and binocular gaze data
@@ -145,30 +148,15 @@ class PupilFacade:
                 ]  # pupil detection on which the gaze detection was based (just use the first one for now if there were multiple)
                 # Record data common to both 2D and 3D formats
                 gaze_items = [
-                    (
-                        "timestamp",
-                        payload["timestamp"],
-                    ),  # seconds from an arbitrary reference time, but should be synced with the video timestamps
-                    ("position", payload["norm_pos"]),  # normalized units [0-1]
-                    ("confidence", payload["confidence"]),  # gaze confidence [0-1]
+                    ("timestamp", np.array([payload["timestamp"]], dtype=np.float64)),  # seconds from an arbitrary reference time, but should be synced with the video timestamps
+                    ("position", np.array([payload["norm_pos"]], dtype=np.float64)),  # normalized units [0-1]
+                    ("confidence", np.array([payload["confidence"]], dtype=np.float64)),  # gaze confidence [0-1]
                 ]
                 pupil_items = [
-                    (
-                        "timestamp",
-                        [pupil["timestamp"] for pupil in pupil_data],
-                    ),  # seconds from an arbitrary reference time, but should be synced with the video timestamps
-                    (
-                        "position",
-                        [pupil["norm_pos"] for pupil in pupil_data],
-                    ),  # normalized units [0-1]
-                    (
-                        "confidence",
-                        [pupil["confidence"] for pupil in pupil_data],
-                    ),  # [0-1]
-                    (
-                        "diameter",
-                        [pupil["diameter"] for pupil in pupil_data],
-                    ),  # 2D image space, unit: pixel
+                    ("timestamp", np.array([pupil["timestamp"] for pupil in pupil_data], dtype=np.float64)),  # seconds from an arbitrary reference time, but should be synced with the video timestamps
+                    ("position", np.array([pupil["norm_pos"] for pupil in pupil_data], dtype=np.float64)),  # normalized units [0-1]
+                    ("confidence", np.array([pupil["confidence"] for pupil in pupil_data], dtype=np.float64)),  # [0-1]
+                    ("diameter", np.array([pupil["diameter"] for pupil in pupil_data], dtype=np.float64)),  # 2D image space, unit: pixel
                 ]
                 # Add extra data available for 3D formats
                 if topic in ["gaze.3d.0.", "gaze.3d.01."]:
@@ -176,73 +164,70 @@ class PupilFacade:
                         [
                             (
                                 "normal_3d",
-                                list(
+                                np.array(list(
                                     payload[
                                         "gaze_normal%s_3d"
                                         % ("s" if self._is_binocular else "")
                                     ].values()
-                                ),
+                                ), dtype=np.float64),
                             ),  # [(x,y,z),]
                             ("point_3d", payload["gaze_point_3d"]),  # x,y,z
                             (
                                 "eye_center_3d",
-                                list(
+                                np.array(list(
                                     payload[
                                         "eye_center%s_3d"
                                         % ("s" if self._is_binocular else "")
                                     ].values()
-                                ),
+                                ), dtype=np.float64),
                             ),  # [(x,y,z),]
                         ]
                     )
                     pupil_items.extend(
                         [
-                            ("polar_theta", [pupil["theta"] for pupil in pupil_data]),
-                            ("polar_phi", [pupil["phi"] for pupil in pupil_data]),
+                            ("polar_theta", np.array([pupil["theta"] for pupil in pupil_data], dtype=np.float64)),
+                            ("polar_phi", np.array([pupil["phi"] for pupil in pupil_data], dtype=np.float64)),
                             (
                                 "circle3d_radius",
-                                [pupil["circle_3d"]["radius"] for pupil in pupil_data],
+                                np.array([pupil["circle_3d"]["radius"] for pupil in pupil_data], dtype=np.float64),
                             ),  # mm in 3D space
                             (
                                 "circle3d_center",
-                                [pupil["circle_3d"]["center"] for pupil in pupil_data],
+                                np.array([pupil["circle_3d"]["center"] for pupil in pupil_data], dtype=np.float64),
                             ),  # mm in 3D space
                             (
                                 "circle3d_normal",
-                                [pupil["circle_3d"]["normal"] for pupil in pupil_data],
+                                np.array([pupil["circle_3d"]["normal"] for pupil in pupil_data], dtype=np.float64),
                             ),  # mm in 3D space
                             (
                                 "diameter3d",
-                                [pupil["diameter_3d"] for pupil in pupil_data],
+                                np.array([pupil["diameter_3d"] for pupil in pupil_data], dtype=np.float64),
                             ),  # mm in 3D space
                             (
                                 "sphere_center",
-                                [pupil["sphere"]["center"] for pupil in pupil_data],
+                                np.array([pupil["sphere"]["center"] for pupil in pupil_data], dtype=np.float64),
                             ),  # mm in 3D space
                             (
                                 "sphere_radius",
-                                [pupil["sphere"]["radius"] for pupil in pupil_data],
+                                np.array([pupil["sphere"]["radius"] for pupil in pupil_data], dtype=np.float64),
                             ),  # mm in 3D space
                             (
                                 "projected_sphere_center",
-                                [
-                                    pupil["projected_sphere"]["center"]
-                                    for pupil in pupil_data
-                                ],
+                                np.array([pupil["projected_sphere"]["center"] for pupil in pupil_data], dtype=np.float64),
                             ),  # pixels in image space
                             (
                                 "projected_sphere_axes",
-                                [
+                                np.array([
                                     pupil["projected_sphere"]["axes"]
                                     for pupil in pupil_data
-                                ],
+                                ], dtype=np.float64),
                             ),  # pixels in image space
                             (
                                 "projected_sphere_angle",
-                                [
+                                np.array([
                                     pupil["projected_sphere"]["angle"]
                                     for pupil in pupil_data
-                                ],
+                                ], dtype=np.float64),
                             ),
                         ]
                     )
@@ -252,38 +237,40 @@ class PupilFacade:
                         [
                             (
                                 "ellipse_center",
-                                [pupil["ellipse"]["center"] for pupil in pupil_data],
+                                np.array([pupil["ellipse"]["center"] for pupil in pupil_data], dtype=np.float64),
                             ),  # pixels, in image space
                             (
                                 "ellipse_axes",
-                                [pupil["ellipse"]["axes"] for pupil in pupil_data],
+                                np.array([pupil["ellipse"]["axes"] for pupil in pupil_data], dtype=np.float64),
                             ),  # pixels, in image space
                             (
                                 "ellipse_angle_deg",
-                                [pupil["ellipse"]["angle"] for pupil in pupil_data],
+                                np.array([pupil["ellipse"]["angle"] for pupil in pupil_data], dtype=np.float64),
                             ),  # degrees
                         ]
                     )
-                output["eye-pupil"] = dict(pupil_items)
-                output["eye-gaze"] = dict(gaze_items)
+                output["eye-pupil"] = dict(pupil_items.extend(["toa_s", np.array([toa_s], dtype=np.float64)]))
+                output["eye-gaze"] = dict(gaze_items.extend(["toa_s", np.array([toa_s], dtype=np.float64)]))
             # Process fixations data
             elif topic == "fixations":
                 payload: dict[str, Any] = msgpack.loads(data[1])  # type: ignore
                 output["eye-fixations"] = {
-                    "id": payload["id"],  # int
-                    "timestamp": payload["timestamp"],  # float
-                    "norm_pos": payload["norm_pos"],  # float[2]
-                    "dispersion": payload["dispersion"],  # float
-                    "duration": payload["duration"],  # float
-                    "confidence": payload["confidence"],  # float
-                    "gaze_point_3d": payload["gaze_point_3d"],  # float[3]
+                    "id": np.array([payload["id"]], dtype=np.uint64),  # int
+                    "timestamp": np.array([payload["timestamp"]], dtype=np.float64),  # float
+                    "norm_pos": np.array([payload["norm_pos"]], dtype=np.float64),  # float[2]
+                    "dispersion": np.array([payload["dispersion"]], dtype=np.float64),  # float
+                    "duration": np.array([payload["duration"]], dtype=np.float64),  # float
+                    "confidence": np.array([payload["confidence"]], dtype=np.float64),  # float
+                    "gaze_point_3d": np.array([payload["gaze_point_3d"]], dtype=np.float64),  # float[3]
+                    "toa_s": np.array([toa_s], dtype=np.float64),
                 }
             # Process blinks data
             elif topic == "blinks":
                 payload: dict[str, Any] = msgpack.loads(data[1])  # type: ignore
                 output["eye-blinks"] = {
-                    "timestamp": payload["timestamp"],  # float
-                    "confidence": payload["confidence"],  # float
+                    "timestamp": np.array([payload["timestamp"]], dtype=np.float64),  # float
+                    "confidence": np.array([payload["confidence"]], dtype=np.float64),  # float
+                    "toa_s": np.array([toa_s], dtype=np.float64),
                 }
             # Process world video data
             elif topic == "frame.world":
@@ -301,10 +288,11 @@ class PupilFacade:
                 # Decode the frame.
                 frame_buffer = data[2]
                 output["eye-video-world"] = {
-                    "frame_timestamp": float(metadata["timestamp"]),
-                    "frame_index": frame_index,  # world view frame index used for annotation
-                    "frame_sequence_id": metadata["index"],
-                    "frame": (frame_buffer, is_keyframe, frame_index),
+                    "frame_timestamp": np.array([metadata["timestamp"]], dtype=np.uint64),
+                    "frame_index": np.array([frame_index], dtype=np.uint64),  # world view frame index used for annotation
+                    "frame_sequence_id": np.array([metadata["index"]], dtype=np.uint64),
+                    "frame": frame_buffer,
+                    "toa_s": np.array([toa_s], dtype=np.float64),
                 }
             # Process eye video data
             elif topic in ["frame.eye.0", "frame.eye.1"]:
@@ -324,12 +312,13 @@ class PupilFacade:
                 frame_buffer = data[2]
                 # Prepare the output for the file writer.
                 output["eye-video-eye%d" % eye_id] = {
-                    "frame_timestamp": float(metadata["timestamp"]),
-                    "frame_index": frame_index,
-                    "frame_sequence_id": metadata["index"],
-                    "frame": (frame_buffer, is_keyframe, frame_index),
+                    "frame_timestamp": np.array([metadata["timestamp"]], dtype=np.uint64),
+                    "frame_index": np.array([frame_index], dtype=np.uint64),  # world view frame index used for annotation
+                    "frame_sequence_id": np.array([metadata["index"]], dtype=np.uint64),
+                    "frame": frame_buffer,
+                    "toa_s": np.array([toa_s], dtype=np.float64),
                 }
-            return time_s, output
+            return output
         except queue.Empty:
             if self._is_more:
                 print(

@@ -26,6 +26,7 @@
 # ############
 
 from collections import OrderedDict
+from typing import Optional
 
 from hermes.base.stream import Stream
 from hermes.utils.types import VideoFormatEnum
@@ -38,8 +39,8 @@ class PupilUvcStream(Stream):
         self,
         camera_mapping: dict[str, str],
         video_image_format: VideoFormatEnum | str,
-        timesteps_before_solidified: int = 0,
-        update_interval_ms: int = 100,
+        timesteps_before_solidified: Optional[int] = 0,
+        update_interval_ms: Optional[int] = 100,
         **_
     ) -> None:
         super().__init__()
@@ -58,6 +59,7 @@ class PupilUvcStream(Stream):
                 stream_name="frame",
                 data_type="uint8",
                 sample_size=camera_spec["resolution"],
+                buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame"],
                 is_measure_rate_hz=True,
@@ -70,6 +72,7 @@ class PupilUvcStream(Stream):
                 stream_name="frame_timestamp",
                 data_type="float64",
                 sample_size=[1],
+                buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame_timestamp"],
             )
@@ -78,6 +81,7 @@ class PupilUvcStream(Stream):
                 stream_name="frame_index",
                 data_type="uint64",
                 sample_size=[1],
+                buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame_index"],
             )
@@ -86,6 +90,7 @@ class PupilUvcStream(Stream):
                 stream_name="frame_sequence_id",
                 data_type="uint64",
                 sample_size=[1],
+                buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame_sequence_id"],
             )
@@ -94,6 +99,7 @@ class PupilUvcStream(Stream):
                 stream_name="toa_s",
                 data_type="float64",
                 sample_size=[1],
+                buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["toa_s"],
             )

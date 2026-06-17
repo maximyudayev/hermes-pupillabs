@@ -25,6 +25,9 @@
 #
 # ############
 
+from typing import Optional
+
+from hermes.utils.time_utils import get_time
 import zmq
 
 from hermes.base.nodes.producer import Producer
@@ -54,24 +57,25 @@ class PupilCoreProducer(Producer):
         logging_spec: LoggingSpec,
         pupil_capture_ip: str = DNS_LOCALHOST,
         pupil_capture_port: str = PORT_EYE,
-        video_image_format: VideoFormatEnum = VideoFormatEnum.JPEG,
-        gaze_estimate_stale_s: float = 0.2,  # how long before a gaze estimate is considered stale (changes color in the world-gaze video)
-        is_binocular: bool = True,
-        is_stream_video_world: bool = False,
-        is_stream_video_eye: bool = False,
-        is_stream_fixation: bool = False,
-        is_stream_blinks: bool = False,
-        shape_video_world: tuple[int, int, int] = (1080, 720, 3),
-        shape_video_eye0: tuple[int, int, int] = (192, 192, 3),
-        shape_video_eye1: tuple[int, int, int] = (192, 192, 3),
-        fps_video_world: float = 30.0,
-        fps_video_eye0: float = 120.0,
-        fps_video_eye1: float = 120.0,
-        port_pub: str = PORT_BACKEND,
-        port_sync: str = PORT_SYNC_HOST,
-        port_killsig: str = PORT_KILL,
-        port_pause: str = PORT_PAUSE,
-        timesteps_before_solidified: int = 0,
+        video_image_format: Optional[VideoFormatEnum] = VideoFormatEnum.BGR,
+        buf_len: Optional[int] = 10000,
+        gaze_estimate_stale_s: Optional[float] = 0.2,  # how long before a gaze estimate is considered stale (changes color in the world-gaze video)
+        is_binocular: Optional[bool] = True,
+        is_stream_video_world: Optional[bool] = False,
+        is_stream_video_eye: Optional[bool] = False,
+        is_stream_fixation: Optional[bool] = False,
+        is_stream_blinks: Optional[bool] = False,
+        shape_video_world: Optional[tuple[int, int, int]] = (1080, 720, 3),
+        shape_video_eye0: Optional[tuple[int, int, int]] = (192, 192, 3),
+        shape_video_eye1: Optional[tuple[int, int, int]] = (192, 192, 3),
+        fps_video_world: Optional[float] = 30.0,
+        fps_video_eye0: Optional[float] = 120.0,
+        fps_video_eye1: Optional[float] = 120.0,
+        port_pub: Optional[str] = PORT_BACKEND,
+        port_sync: Optional[str] = PORT_SYNC_HOST,
+        port_killsig: Optional[str] = PORT_KILL,
+        port_pause: Optional[str] = PORT_PAUSE,
+        timesteps_before_solidified: Optional[int] = 0,
         **_
     ) -> None:
 
@@ -101,6 +105,7 @@ class PupilCoreProducer(Producer):
             "fps_video_eye0": fps_video_eye0,
             "fps_video_eye1": fps_video_eye1,
             "pixel_format": video_image_format,
+            "buf_len": buf_len,
             "timesteps_before_solidified": timesteps_before_solidified,
         }
 
@@ -141,11 +146,10 @@ class PupilCoreProducer(Producer):
         self._handler.keep_data()
 
     def _process_data(self) -> None:
-        res = self._handler.process_data()
-        if res is not None:
-            process_time_s, data = res
+        data = self._handler.process_data()
+        if data is not None:
             tag: str = "%s.data" % self.topic
-            self._publish(tag, process_time_s=process_time_s, data=data)
+            self._publish(tag, process_time_s=get_time(), data=data)
         elif not self._is_continue_capture:
             self._send_end_packet()
 
