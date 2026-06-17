@@ -8,6 +8,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## HERMES Pupil Labs
 <!-- insertion marker -->
+## [0.2.0](https://github.com/maximyudayev/hermes-pupillabs/releases/tag/0.2.0) - 2026-06-17
+
+<small>[Compare with 0.1.1](https://github.com/maximyudayev/hermes-pupillabs/compare/0.1.1...0.2.0)</small>
+
+### Features
+
+- Updated to align with `HERMES>=0.4.0` ([e9b6377](https://github.com/maximyudayev/hermes-pupillabs/commit/e9b6377003a379deb29ea671860cbd298c251cde) by Maxim Yudayev).
+
 ## [0.1.1](https://github.com/maximyudayev/hermes-pupillabs/releases/tag/0.1.1) - 2026-05-07
 
 <small>[Compare with 0.1.0](https://github.com/maximyudayev/hermes-pupillabs/compare/0.1.0...0.1.1)</small>
