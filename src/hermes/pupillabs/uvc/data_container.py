@@ -28,11 +28,11 @@
 from collections import OrderedDict
 from typing import Optional
 
-from hermes.base.stream import Stream
+from hermes.base.data_container import DataContainer
 from hermes.utils.types import VideoFormatEnum
 
 
-class PupilUvcStream(Stream):
+class PupilUvcDataContainer(DataContainer):
     """A structure to store Pupil UVC stream's data."""
 
     def __init__(
@@ -54,12 +54,13 @@ class PupilUvcStream(Stream):
 
         # Add a streams for each camera.
         for camera_name, camera_spec in self._camera_mapping.items():
-            self.add_stream(
-                device_name=camera_name,
-                stream_name="frame",
+            self.add_channel(
+                bundle_name=camera_name,
+                channel_name="frame",
                 data_type="uint8",
                 sample_size=camera_spec["resolution"],
                 buf_len=camera_spec["buf_len"],
+                mem_size=camera_spec["mem_size"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame"],
                 is_measure_rate_hz=True,
@@ -67,36 +68,36 @@ class PupilUvcStream(Stream):
                 color_format=self._video_image_format,
                 timesteps_before_solidified=self._timesteps_before_solidified,
             )
-            self.add_stream(
-                device_name=camera_name,
-                stream_name="frame_timestamp",
+            self.add_channel(
+                bundle_name=camera_name,
+                channel_name="frame_timestamp",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame_timestamp"],
             )
-            self.add_stream(
-                device_name=camera_name,
-                stream_name="frame_index",
+            self.add_channel(
+                bundle_name=camera_name,
+                channel_name="frame_index",
                 data_type="uint64",
                 sample_size=[1],
                 buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame_index"],
             )
-            self.add_stream(
-                device_name=camera_name,
-                stream_name="frame_sequence_id",
+            self.add_channel(
+                bundle_name=camera_name,
+                channel_name="frame_sequence_id",
                 data_type="uint64",
                 sample_size=[1],
                 buf_len=camera_spec["buf_len"],
                 sampling_rate_hz=camera_spec["fps"],
                 data_notes=self._data_notes[camera_name]["frame_sequence_id"],
             )
-            self.add_stream(
-                device_name=camera_name,
-                stream_name="toa_s",
+            self.add_channel(
+                bundle_name=camera_name,
+                channel_name="toa_s",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=camera_spec["buf_len"],
@@ -118,14 +119,14 @@ class PupilUvcStream(Stream):
             self._data_notes[camera_name]["frame"] = OrderedDict(
                 [
                     ("Serial Number", camera_name),
-                    (Stream.metadata_data_headings_key, camera_name),
+                    (DataContainer.metadata_data_headings_key, camera_name),
                 ]
             )
             self._data_notes[camera_name]["frame_timestamp"] = OrderedDict(
                 [
                     (
                         "Notes",
-                        "Time of sampling of the frame w.r.t the camera onboard PTP clock.",
+                        "Time of sampling of the frame w.r.t the camera onboard oscillator clock.",
                     ),
                 ]
             )

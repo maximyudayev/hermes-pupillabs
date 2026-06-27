@@ -29,6 +29,7 @@ from multiprocessing import Process, Queue, Event
 from multiprocessing.synchronize import Event as _Event
 from queue import Empty
 from typing import Optional
+import numpy as np
 
 from hermes.utils.mp_utils import launch_callable
 from hermes.utils.zmq_utils import PORT_BACKEND, PORT_SYNC_HOST, PORT_KILL
@@ -36,9 +37,8 @@ from hermes.utils.time_utils import get_time
 from hermes.utils.types import VideoFormatEnum, LoggingSpec
 
 from hermes.base.nodes.producer import Producer
-import numpy as np
 
-from .stream import PupilUvcStream
+from .data_container import PupilUvcDataContainer
 from .handler import PupilUvcHandler
 
 
@@ -49,7 +49,7 @@ class PupilUvcProducer(Producer):
         host_ip: str,
         camera_mapping: dict,
         logging_spec: LoggingSpec,
-        video_image_format: Optional[VideoFormatEnum] = VideoFormatEnum.BGR,
+        video_image_format: Optional[VideoFormatEnum] = VideoFormatEnum.MJPEG,
         port_pub: Optional[str] = PORT_BACKEND,
         port_sync: Optional[str] = PORT_SYNC_HOST,
         port_killsig: Optional[str] = PORT_KILL,
@@ -64,13 +64,13 @@ class PupilUvcProducer(Producer):
             map(lambda cam: (cam, None), self._camera_mapping.keys())
         )
         self._parse_frame_fn = self._parse_first_frame
-        self._cap_queue: Queue = Queue()
+        self._cap_queue: Queue[tuple[str, dict, float]] = Queue()
         self._cap_procs: list[Process] = []
         self._cap_handlers: list[PupilUvcHandler] = []
         self._stop_event = Event()
         self._keep_event = Event()
 
-        stream_out_spec = {
+        data_out_spec = {
             "camera_mapping": self._camera_mapping,
             "video_image_format": video_image_format,
             "timesteps_before_solidified": timesteps_before_solidified,
@@ -79,7 +79,7 @@ class PupilUvcProducer(Producer):
         super().__init__(
             topic=topic,
             host_ip=host_ip,
-            stream_out_spec=stream_out_spec,
+            data_out_spec=data_out_spec,
             logging_spec=logging_spec,
             port_pub=port_pub,
             port_sync=port_sync,
@@ -88,8 +88,8 @@ class PupilUvcProducer(Producer):
         )
 
     @classmethod
-    def create_stream(cls, stream_info: dict) -> PupilUvcStream:
-        return PupilUvcStream(**stream_info)
+    def create_data_container(cls, data_spec: dict) -> PupilUvcDataContainer:
+        return PupilUvcDataContainer(**data_spec)
 
     def _ping_device(self) -> None:
         return None
@@ -128,51 +128,42 @@ class PupilUvcProducer(Producer):
 
     def _process_data(self) -> None:
         try:
-            msg = self._cap_queue.get(timeout=10)
+            msg: tuple[str, dict, float] = self._cap_queue.get(timeout=10)
             process_time_s = get_time()
             output = self._parse_frame_fn(msg)
-            if output is not None:
-                tag: str = "%s.data" % self.topic
-                self._publish(tag, process_time_s=process_time_s, data=output)
+            tag: str = "%s.data" % self.topic
+            self._publish(tag, process_time_s=process_time_s, data=output)
         except Empty:
             if not self._is_continue_capture:
                 self._send_end_packet()
 
-    def _parse_first_frame(self, msg: tuple) -> dict:
+    def _parse_first_frame(self, msg: tuple[str, dict, float]) -> dict[str, dict[str, np.ndarray]]:
         camera_name, frame, toa_s = msg
-
         if self._start_index[camera_name] is None:
             self._start_index[camera_name] = frame["index"]
             frame_index = 0
         else:
             frame_index = frame["index"] - self._start_index[camera_name]
-
         if all(v is not None for v in self._start_index.values()):
             self._parse_frame_fn = self._parse_frame
+        return self._prep_output(camera_name=camera_name, frame=frame, frame_index=frame_index, toa_s=toa_s)
 
-        output: dict[str, dict] = {}
-        output[camera_name] = {
-            "frame_timestamp": np.array([frame["timestamp"]], dtype=np.uint64),
-            "frame_index": np.array([frame_index], dtype=np.uint64),
-            "frame_sequence_id": np.array([frame["index"]], dtype=np.uint64),
-            "frame": frame["data"],
-            "toa_s": np.array([toa_s], dtype=np.float64),
-        }
-        return output
-
-    def _parse_frame(self, msg: tuple) -> dict:
+    def _parse_frame(self, msg: tuple[str, dict, float]) -> dict[str, dict[str, np.ndarray]]:
         camera_name, frame, toa_s = msg
-
         frame_index = frame["index"] - self._start_index[camera_name]
+        return self._prep_output(camera_name=camera_name, frame=frame, frame_index=frame_index, toa_s=toa_s)
 
-        output: dict[str, dict] = {}
-        output[camera_name] = {
-            "frame_timestamp": np.array([frame["timestamp"]], dtype=np.uint64),
-            "frame_index": np.array([frame_index], dtype=np.uint64),
-            "frame_sequence_id": np.array([frame["index"]], dtype=np.uint64),
-            "frame": frame["data"],
-            "toa_s": np.array([toa_s], dtype=np.float64),
+    def _prep_output(self, camera_name: str, frame: dict, frame_index: str, toa_s: float) -> dict[str, dict[str, np.ndarray]]:
+        output = {
+            camera_name: {
+                "frame_timestamp": np.array([[frame["timestamp"]]], dtype=np.uint64),
+                "frame_index": np.array([[frame_index]], dtype=np.uint64),
+                "frame_sequence_id": np.array([[frame["index"]]], dtype=np.uint64),
+                "toa_s": np.array([[toa_s]], dtype=np.float64),
+            }
         }
+        if "data" in frame: 
+            output[camera_name]["frame"] = frame["data"]
         return output
 
     def _stop_new_data(self) -> None:

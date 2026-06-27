@@ -41,7 +41,7 @@ class PupilUvcHandler:
         ref_time_s: float,
         camera_name: str,
         camera_spec: dict,
-        queue: Queue,
+        queue: Queue[tuple[str, dict, float]],  # TODO: replace in favor of the upstream shared circular buffer
         video_image_format: VideoFormatEnum,
         stop_event: _Event,
         keep_event: _Event,
@@ -56,13 +56,13 @@ class PupilUvcHandler:
         self._restart_cap_device()
 
         if video_image_format == VideoFormatEnum.MJPEG:
-            get_buffer_fn = lambda frame: bytes(frame.jpeg_buffer)
+            get_buffer_fn = lambda frame: {"timestamp": frame.timestamp, "index": frame.index, "data": bytes(frame.jpeg_buffer)}
         elif video_image_format == VideoFormatEnum.BGR:
-            get_buffer_fn = lambda frame: frame.bgr
+            get_buffer_fn = lambda frame: {"timestamp": frame.timestamp, "index": frame.index, "data": frame.bgr[None]}
         elif video_image_format == VideoFormatEnum.YUV:
-            get_buffer_fn = lambda frame: frame.yuv
+            get_buffer_fn = lambda frame: {"timestamp": frame.timestamp, "index": frame.index, "data": frame.yuv[None]}
         else:
-            get_buffer_fn = lambda _: None
+            get_buffer_fn = lambda frame: {"timestamp": frame.timestamp, "index": frame.index}
 
         # synchronize worker process to the upstream `keep_data` signal.
         ready_event.set()
@@ -106,11 +106,7 @@ class PupilUvcHandler:
         try:
             frame = self.cap.get_frame(timeout=1)
             toa_s = get_time()
-            out = {
-                "timestamp": frame.timestamp,
-                "index": frame.index,
-                "data": get_buffer_fn(frame),
-            }
+            out = get_buffer_fn(frame)
             self.queue.put((self.camera_name, out, toa_s))
         except uvc.InitError as err:
             print(f"[PupilUvcProducer] Failed to init {self.camera_name}: {err}", flush=True)

@@ -44,7 +44,7 @@ from hermes.utils.zmq_utils import (
 )
 
 from hermes.pupillabs.core.facade import PupilFacade
-from hermes.pupillabs.core.stream import PupilCoreStream
+from hermes.pupillabs.core.data_container import PupilCoreDataContainer
 
 
 class PupilCoreProducer(Producer):
@@ -55,10 +55,11 @@ class PupilCoreProducer(Producer):
         topic: str,
         host_ip: str,
         logging_spec: LoggingSpec,
-        pupil_capture_ip: str = DNS_LOCALHOST,
-        pupil_capture_port: str = PORT_EYE,
+        pupil_capture_ip: Optional[str] = DNS_LOCALHOST,
+        pupil_capture_port: Optional[str] = PORT_EYE,
         video_image_format: Optional[VideoFormatEnum] = VideoFormatEnum.BGR,
-        buf_len: Optional[int] = 10000,
+        buf_len: Optional[int] = 3000,
+        mem_size: Optional[int] = 100000000,
         gaze_estimate_stale_s: Optional[float] = 0.2,  # how long before a gaze estimate is considered stale (changes color in the world-gaze video)
         is_binocular: Optional[bool] = True,
         is_stream_video_world: Optional[bool] = False,
@@ -91,7 +92,7 @@ class PupilCoreProducer(Producer):
         self._gaze_estimate_stale_s = gaze_estimate_stale_s
         self._port_pause = port_pause
 
-        stream_out_spec = {
+        data_out_spec = {
             "is_binocular": is_binocular,
             "is_stream_video_world": is_stream_video_world,
             "is_stream_video_eye": is_stream_video_eye,
@@ -106,13 +107,14 @@ class PupilCoreProducer(Producer):
             "fps_video_eye1": fps_video_eye1,
             "pixel_format": video_image_format,
             "buf_len": buf_len,
+            "mem_size": mem_size,
             "timesteps_before_solidified": timesteps_before_solidified,
         }
 
         super().__init__(
             topic=topic,
             host_ip=host_ip,
-            stream_out_spec=stream_out_spec,
+            data_out_spec=data_out_spec,
             logging_spec=logging_spec,
             port_pub=port_pub,
             port_sync=port_sync,
@@ -120,14 +122,14 @@ class PupilCoreProducer(Producer):
         )
 
     @classmethod
-    def create_stream(cls, stream_spec: dict) -> PupilCoreStream:
-        return PupilCoreStream(**stream_spec)
+    def create_data_container(cls, data_spec: dict) -> PupilCoreDataContainer:
+        return PupilCoreDataContainer(**data_spec)
 
     def _ping_device(self) -> None:
         return None
 
     def _connect(self) -> bool:
-        # TODO: launch Pupil Capture process
+        # TODO: launch Pupil Capture process.
         self._handler: PupilFacade = PupilFacade(
             is_binocular=self._is_binocular,
             is_stream_video_world=self._is_stream_video_world,
@@ -139,7 +141,7 @@ class PupilCoreProducer(Producer):
             gaze_estimate_stale_s=self._gaze_estimate_stale_s,
             video_image_format=self._video_image_format,
         )
-        self._handler.set_stream_data_getter(fn=self._stream.peek_data_new)
+        self._handler.set_stream_data_getter(fn=self._data_container.peek_data_new)
         return True
 
     def _keep_samples(self) -> None:

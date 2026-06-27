@@ -129,7 +129,7 @@ class PupilFacade:
             data, toa_s, device_time_s = self._receive_queue.get(timeout=5)
             topic = data[0].decode("utf-8")
             output: dict[str, dict[str, Any]] = {
-                "eye-time": {
+                "eye_time": {
                     "device_time_s": np.array([device_time_s], dtype=np.float64),
                     "toa_s": np.array([toa_s], dtype=np.float64),
                 }
@@ -249,12 +249,12 @@ class PupilFacade:
                             ),  # degrees
                         ]
                     )
-                output["eye-pupil"] = dict(pupil_items.extend(["toa_s", np.array([toa_s], dtype=np.float64)]))
-                output["eye-gaze"] = dict(gaze_items.extend(["toa_s", np.array([toa_s], dtype=np.float64)]))
+                output["eye_pupil"] = dict(pupil_items.extend(["toa_s", np.array([toa_s], dtype=np.float64)]))
+                output["eye_gaze"] = dict(gaze_items.extend(["toa_s", np.array([toa_s], dtype=np.float64)]))
             # Process fixations data
             elif topic == "fixations":
                 payload: dict[str, Any] = msgpack.loads(data[1])  # type: ignore
-                output["eye-fixations"] = {
+                output["eye_fixations"] = {
                     "id": np.array([payload["id"]], dtype=np.uint64),  # int
                     "timestamp": np.array([payload["timestamp"]], dtype=np.float64),  # float
                     "norm_pos": np.array([payload["norm_pos"]], dtype=np.float64),  # float[2]
@@ -267,7 +267,7 @@ class PupilFacade:
             # Process blinks data
             elif topic == "blinks":
                 payload: dict[str, Any] = msgpack.loads(data[1])  # type: ignore
-                output["eye-blinks"] = {
+                output["eye_blinks"] = {
                     "timestamp": np.array([payload["timestamp"]], dtype=np.float64),  # float
                     "confidence": np.array([payload["confidence"]], dtype=np.float64),  # float
                     "toa_s": np.array([toa_s], dtype=np.float64),
@@ -287,7 +287,7 @@ class PupilFacade:
                 frame_index = metadata["index"] - self._start_index_world
                 # Decode the frame.
                 frame_buffer = data[2]
-                output["eye-video-world"] = {
+                output["eye_video_world"] = {
                     "frame_timestamp": np.array([metadata["timestamp"]], dtype=np.uint64),
                     "frame_index": np.array([frame_index], dtype=np.uint64),  # world view frame index used for annotation
                     "frame_sequence_id": np.array([metadata["index"]], dtype=np.uint64),
@@ -311,7 +311,7 @@ class PupilFacade:
                 # Decode the frame.
                 frame_buffer = data[2]
                 # Prepare the output for the file writer.
-                output["eye-video-eye%d" % eye_id] = {
+                output["eye_video_eye%d" % eye_id] = {
                     "frame_timestamp": np.array([metadata["timestamp"]], dtype=np.uint64),
                     "frame_index": np.array([frame_index], dtype=np.uint64),  # world view frame index used for annotation
                     "frame_sequence_id": np.array([metadata["index"]], dtype=np.uint64),

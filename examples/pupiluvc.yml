@@ -39,6 +39,7 @@ remote_kill_ip: null
 
 logging_spec:
   stream_period_s     : 10
+  is_quiet            : False
 
   stream_hdf5         : True
   stream_csv          : False
@@ -59,12 +60,13 @@ producer_specs:
     class: "PupilUvcProducer"
     topic: "smartglasses_uvc"
     settings:
-      video_image_format: "BGR"
+      video_image_format: "MJPEG"
       camera_mapping:
         left_eye:
           name: "Pupil Cam2 ID0"
           fps: 120
-          buf_len: 10000
+          mem_size: 50000000  # up to 50 MB for video frames
+          buf_len: 3600  # up to 30 seconds
           resolution:
             - 400
             - 400
@@ -95,7 +97,8 @@ producer_specs:
         right_eye:
           name: "Pupil Cam2 ID1"
           fps: 120
-          buf_len: 10000
+          mem_size: 50000000  # up to 50 MB for video frames
+          buf_len: 3600  # up to 30 seconds
           resolution:
             - 400
             - 400
@@ -126,7 +129,8 @@ producer_specs:
         ego:
           name: "Pupil Cam1 ID2"
           fps: 30
-          buf_len: 3000
+          mem_size: 100000000  # up to 100 MB for video frames
+          buf_len: 900  # up to 30 seconds
           resolution:
             - 720
             - 1280

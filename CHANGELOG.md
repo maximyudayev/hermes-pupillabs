@@ -6,7 +6,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## HERMES Pupil Labs
 <!-- insertion marker -->
 ## [0.2.0](https://github.com/maximyudayev/hermes-pupillabs/releases/tag/0.2.0) - 2026-06-17
 

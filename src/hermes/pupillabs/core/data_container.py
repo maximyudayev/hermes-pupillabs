@@ -28,12 +28,12 @@
 from collections import OrderedDict
 from typing import Optional
 
-from hermes.base.stream import Stream
+from hermes.base.data_container import DataContainer
 from hermes.utils.types import VideoFormatEnum
 
 
-class PupilCoreStream(Stream):
-    """A structure to store Pupil Core stream's data."""
+class PupilCoreDataContainer(DataContainer):
+    """A structure to store Pupil Core `Node`s data."""
 
     def __init__(
         self,
@@ -50,7 +50,8 @@ class PupilCoreStream(Stream):
         fps_video_eye0: float,
         fps_video_eye1: float,
         pixel_format: VideoFormatEnum,
-        buf_len: Optional[int] = 10000,
+        buf_len: Optional[int] = 3000,
+        mem_size: Optional[int] = 100000000,
         timesteps_before_solidified: Optional[int] = 0,
         update_interval_ms: Optional[int] = 100,
         **_
@@ -74,18 +75,18 @@ class PupilCoreStream(Stream):
         # Note that core time is included with each other stream as well,
         #  but include a dedicated one too just in case there are delays in sending
         #  the other data payloads.
-        self.add_stream(
-            device_name="eye-time",
-            stream_name="device_time_s",
+        self.add_channel(
+            bundle_name="eye_time",
+            channel_name="device_time_s",
             data_type="float64",
             sample_size=[1],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-time"]["device_time_s"],
+            data_notes=self._data_notes["eye_time"]["device_time_s"],
         )
-        self.add_stream(
-            device_name="eye-time",
-            stream_name="toa_s",
+        self.add_channel(
+            bundle_name="eye_time",
+            channel_name="toa_s",
             data_type="float64",
             sample_size=[1],
             buf_len=buf_len,
@@ -93,314 +94,315 @@ class PupilCoreStream(Stream):
         )
 
         # Create streams for gaze data.
-        self.add_stream(
-            device_name="eye-gaze",
-            stream_name="confidence",
+        self.add_channel(
+            bundle_name="eye_gaze",
+            channel_name="confidence",
             data_type="float64",
             sample_size=[1],
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-gaze"]["confidence"],
+            data_notes=self._data_notes["eye_gaze"]["confidence"],
         )
-        self.add_stream(
-            device_name="eye-gaze",
-            stream_name="eye_center_3d",
+        self.add_channel(
+            bundle_name="eye_gaze",
+            channel_name="eye_center_3d",
             data_type="float64",
             sample_size=[2, 3],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-gaze"]["eye_center_3d"],
+            data_notes=self._data_notes["eye_gaze"]["eye_center_3d"],
         )
-        self.add_stream(
-            device_name="eye-gaze",
-            stream_name="normal_3d",
+        self.add_channel(
+            bundle_name="eye_gaze",
+            channel_name="normal_3d",
             data_type="float64",
             sample_size=[2, 3],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-gaze"]["normal_3d"],
+            data_notes=self._data_notes["eye_gaze"]["normal_3d"],
         )
-        self.add_stream(
-            device_name="eye-gaze",
-            stream_name="point_3d",
+        self.add_channel(
+            bundle_name="eye_gaze",
+            channel_name="point_3d",
             data_type="float64",
             sample_size=[3],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-gaze"]["point_3d"],
+            data_notes=self._data_notes["eye_gaze"]["point_3d"],
         )
-        self.add_stream(
-            device_name="eye-gaze",
-            stream_name="position",
+        self.add_channel(
+            bundle_name="eye_gaze",
+            channel_name="position",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-gaze"]["position"],
+            data_notes=self._data_notes["eye_gaze"]["position"],
         )
-        self.add_stream(
-            device_name="eye-gaze",
-            stream_name="timestamp",
+        self.add_channel(
+            bundle_name="eye_gaze",
+            channel_name="timestamp",
             data_type="float64",
             sample_size=[1],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             is_measure_rate_hz=True,
-            data_notes=self._data_notes["eye-gaze"]["timestamp"],
+            data_notes=self._data_notes["eye_gaze"]["timestamp"],
         )
 
         # Create streams for pupil data.
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="confidence",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="confidence",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["confidence"],
+            data_notes=self._data_notes["eye_pupil"]["confidence"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="circle3d_center",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="circle3d_center",
             data_type="float64",
             sample_size=[2, 3],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["circle3d_center"],
+            data_notes=self._data_notes["eye_pupil"]["circle3d_center"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="circle3d_normal",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="circle3d_normal",
             data_type="float64",
             sample_size=[2, 3],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["circle3d_normal"],
+            data_notes=self._data_notes["eye_pupil"]["circle3d_normal"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="circle3d_radius",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="circle3d_radius",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["circle3d_radius"],
+            data_notes=self._data_notes["eye_pupil"]["circle3d_radius"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="diameter",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="diameter",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["diameter"],
+            data_notes=self._data_notes["eye_pupil"]["diameter"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="diameter3d",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="diameter3d",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["diameter3d"],
+            data_notes=self._data_notes["eye_pupil"]["diameter3d"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="polar_phi",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="polar_phi",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["polar_phi"],
+            data_notes=self._data_notes["eye_pupil"]["polar_phi"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="polar_theta",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="polar_theta",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["polar_theta"],
+            data_notes=self._data_notes["eye_pupil"]["polar_theta"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="position",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="position",
             data_type="float64",
             sample_size=[2, 2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["position"],
+            data_notes=self._data_notes["eye_pupil"]["position"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="projected_sphere_angle",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="projected_sphere_angle",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["projected_sphere_angle"],
+            data_notes=self._data_notes["eye_pupil"]["projected_sphere_angle"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="projected_sphere_axes",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="projected_sphere_axes",
             data_type="float64",
             sample_size=[2, 2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["projected_sphere_axes"],
+            data_notes=self._data_notes["eye_pupil"]["projected_sphere_axes"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="projected_sphere_center",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="projected_sphere_center",
             data_type="float64",
             sample_size=[2, 2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["projected_sphere_center"],
+            data_notes=self._data_notes["eye_pupil"]["projected_sphere_center"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="sphere_center",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="sphere_center",
             data_type="float64",
             sample_size=[2, 3],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["sphere_center"],
+            data_notes=self._data_notes["eye_pupil"]["sphere_center"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="sphere_radius",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="sphere_radius",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
-            data_notes=self._data_notes["eye-pupil"]["sphere_radius"],
+            data_notes=self._data_notes["eye_pupil"]["sphere_radius"],
         )
-        self.add_stream(
-            device_name="eye-pupil",
-            stream_name="timestamp",
+        self.add_channel(
+            bundle_name="eye_pupil",
+            channel_name="timestamp",
             data_type="float64",
             sample_size=[2],
             buf_len=buf_len,
             sampling_rate_hz=fps_video_world,
             is_measure_rate_hz=True,
-            data_notes=self._data_notes["eye-pupil"]["timestamp"],
+            data_notes=self._data_notes["eye_pupil"]["timestamp"],
         )
 
         # Create streams for fixation data.
         if is_stream_fixation:
-            self.add_stream(
-                device_name="eye-fixations",
-                stream_name="id",
+            self.add_channel(
+                bundle_name="eye_fixations",
+                channel_name="id",
                 data_type="uint64",
                 sample_size=[2],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-fixations"]["id"],
+                data_notes=self._data_notes["eye_fixations"]["id"],
             )
-            self.add_stream(
-                device_name="eye-fixations",
-                stream_name="timestamp",
+            self.add_channel(
+                bundle_name="eye_fixations",
+                channel_name="timestamp",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-fixations"]["timestamp"],
+                data_notes=self._data_notes["eye_fixations"]["timestamp"],
             )
-            self.add_stream(
-                device_name="eye-fixations",
-                stream_name="norm_pos",
+            self.add_channel(
+                bundle_name="eye_fixations",
+                channel_name="norm_pos",
                 data_type="float64",
                 sample_size=[2],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-fixations"]["norm_pos"],
+                data_notes=self._data_notes["eye_fixations"]["norm_pos"],
             )
-            self.add_stream(
-                device_name="eye-fixations",
-                stream_name="dispersion",
+            self.add_channel(
+                bundle_name="eye_fixations",
+                channel_name="dispersion",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-fixations"]["dispersion"],
+                data_notes=self._data_notes["eye_fixations"]["dispersion"],
             )
-            self.add_stream(
-                device_name="eye-fixations",
-                stream_name="duration",
+            self.add_channel(
+                bundle_name="eye_fixations",
+                channel_name="duration",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-fixations"]["duration"],
+                data_notes=self._data_notes["eye_fixations"]["duration"],
             )
-            self.add_stream(
-                device_name="eye-fixations",
-                stream_name="confidence",
+            self.add_channel(
+                bundle_name="eye_fixations",
+                channel_name="confidence",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-fixations"]["confidence"],
+                data_notes=self._data_notes["eye_fixations"]["confidence"],
             )
-            self.add_stream(
-                device_name="eye-fixations",
-                stream_name="gaze_point_3d",
+            self.add_channel(
+                bundle_name="eye_fixations",
+                channel_name="gaze_point_3d",
                 data_type="float64",
                 sample_size=[3],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-fixations"]["gaze_point_3d"],
+                data_notes=self._data_notes["eye_fixations"]["gaze_point_3d"],
             )
 
         # Create streams for blinks data.
         if is_stream_blinks:
-            self.add_stream(
-                device_name="eye-blinks",
-                stream_name="timestamp",
+            self.add_channel(
+                bundle_name="eye_blinks",
+                channel_name="timestamp",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-blinks"]["timestamp"],
+                data_notes=self._data_notes["eye_blinks"]["timestamp"],
             )
-            self.add_stream(
-                device_name="eye-blinks",
-                stream_name="confidence",
+            self.add_channel(
+                bundle_name="eye_blinks",
+                channel_name="confidence",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
-                data_notes=self._data_notes["eye-blinks"]["confidence"],
+                data_notes=self._data_notes["eye_blinks"]["confidence"],
             )
 
         # Create streams for video data.
         if is_stream_video_world:
-            self.add_stream(
-                device_name="eye-video-world",
-                stream_name="frame_timestamp",
+            self.add_channel(
+                bundle_name="eye_video_world",
+                channel_name="frame_timestamp",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
                 sampling_rate_hz=fps_video_world,
-                data_notes=self._data_notes["eye-video-world"]["frame_timestamp"],
+                data_notes=self._data_notes["eye_video_world"]["frame_timestamp"],
             )
-            self.add_stream(
-                device_name="eye-video-world",
-                stream_name="frame_index",
+            self.add_channel(
+                bundle_name="eye_video_world",
+                channel_name="frame_index",
                 data_type="uint64",
                 sample_size=[1],
                 buf_len=buf_len,
                 sampling_rate_hz=fps_video_world,
-                data_notes=self._data_notes["eye-video-world"]["frame_index"],
+                data_notes=self._data_notes["eye_video_world"]["frame_index"],
             )
-            self.add_stream(
-                device_name="eye-video-world",
-                stream_name="frame_sequence_id",
+            self.add_channel(
+                bundle_name="eye_video_world",
+                channel_name="frame_sequence_id",
                 data_type="uint64",
                 sample_size=[1],
                 buf_len=buf_len,
                 sampling_rate_hz=fps_video_world,
-                data_notes=self._data_notes["eye-video-world"]["frame_sequence_id"],
+                data_notes=self._data_notes["eye_video_world"]["frame_sequence_id"],
             )
-            self.add_stream(
-                device_name="eye-video-world",
-                stream_name="frame",
+            self.add_channel(
+                bundle_name="eye_video_world",
+                channel_name="frame",
                 data_type="uint8",
                 sample_size=shape_video_world,
                 buf_len=buf_len,
+                mem_size=mem_size,
                 sampling_rate_hz=fps_video_world,
-                data_notes=self._data_notes["eye-video-world"]["frame"],
+                data_notes=self._data_notes["eye_video_world"]["frame"],
                 is_measure_rate_hz=True,
                 is_video=True,
                 color_format=self._pixel_format,
@@ -408,82 +410,84 @@ class PupilCoreStream(Stream):
             )
 
         if is_stream_video_eye:
-            self.add_stream(
-                device_name="eye-video-eye0",
-                stream_name="frame_timestamp",
+            self.add_channel(
+                bundle_name="eye_video_eye0",
+                channel_name="frame_timestamp",
                 data_type="float64",
                 sample_size=[1],
                 buf_len=buf_len,
                 sampling_rate_hz=fps_video_eye0,
-                data_notes=self._data_notes["eye-video-eye0"]["frame_timestamp"],
+                data_notes=self._data_notes["eye_video_eye0"]["frame_timestamp"],
             )
-            self.add_stream(
-                device_name="eye-video-eye0",
-                stream_name="frame_index",
+            self.add_channel(
+                bundle_name="eye_video_eye0",
+                channel_name="frame_index",
                 data_type="uint64",
                 sample_size=[1],
                 buf_len=buf_len,
                 sampling_rate_hz=fps_video_eye0,
-                data_notes=self._data_notes["eye-video-eye0"]["frame_index"],
+                data_notes=self._data_notes["eye_video_eye0"]["frame_index"],
             )
-            self.add_stream(
-                device_name="eye-video-eye0",
-                stream_name="frame_sequence_id",
+            self.add_channel(
+                bundle_name="eye_video_eye0",
+                channel_name="frame_sequence_id",
                 data_type="uint64",
                 sample_size=[1],
                 buf_len=buf_len,
                 sampling_rate_hz=fps_video_eye0,
-                data_notes=self._data_notes["eye-video-eye0"]["frame_sequence_id"],
+                data_notes=self._data_notes["eye_video_eye0"]["frame_sequence_id"],
             )
-            self.add_stream(
-                device_name="eye-video-eye0",
-                stream_name="frame",
+            self.add_channel(
+                bundle_name="eye_video_eye0",
+                channel_name="frame",
                 data_type="uint8",
                 sample_size=shape_video_eye0,
                 buf_len=buf_len,
+                mem_size=mem_size,
                 sampling_rate_hz=fps_video_eye0,
-                data_notes=self._data_notes["eye-video-eye0"]["frame"],
+                data_notes=self._data_notes["eye_video_eye0"]["frame"],
                 is_measure_rate_hz=True,
                 is_video=True,
                 color_format=self._pixel_format,
                 timesteps_before_solidified=self._timesteps_before_solidified,
             )
             if is_binocular:
-                self.add_stream(
-                    device_name="eye-video-eye1",
-                    stream_name="frame_timestamp",
+                self.add_channel(
+                    bundle_name="eye_video_eye1",
+                    channel_name="frame_timestamp",
                     data_type="float64",
                     sample_size=[1],
                     buf_len=buf_len,
                     sampling_rate_hz=fps_video_eye1,
-                    data_notes=self._data_notes["eye-video-eye1"]["frame_timestamp"],
+                    data_notes=self._data_notes["eye_video_eye1"]["frame_timestamp"],
                 )
-                self.add_stream(
-                    device_name="eye-video-eye1",
-                    stream_name="frame_index",
+                self.add_channel(
+                    bundle_name="eye_video_eye1",
+                    channel_name="frame_index",
                     data_type="uint64",
                     sample_size=[1],
                     buf_len=buf_len,
                     sampling_rate_hz=fps_video_eye1,
-                    data_notes=self._data_notes["eye-video-eye1"]["frame_index"],
+                    data_notes=self._data_notes["eye_video_eye1"]["frame_index"],
                 )
-                self.add_stream(
-                    device_name="eye-video-eye1",
-                    stream_name="frame_sequence_id",
+                self.add_channel(
+                    bundle_name="eye_video_eye1",
+                    channel_name="frame_sequence_id",
                     data_type="uint64",
                     sample_size=[1],
                     buf_len=buf_len,
                     sampling_rate_hz=fps_video_eye1,
-                    data_notes=self._data_notes["eye-video-eye1"]["frame_sequence_id"],
+                    data_notes=self._data_notes["eye_video_eye1"]["frame_sequence_id"],
                 )
-                self.add_stream(
-                    device_name="eye-video-eye1",
-                    stream_name="frame",
+                self.add_channel(
+                    bundle_name="eye_video_eye1",
+                    channel_name="frame",
                     data_type="uint8",
                     sample_size=shape_video_eye1,
                     buf_len=buf_len,
+                    mem_size=mem_size,
                     sampling_rate_hz=fps_video_eye1,
-                    data_notes=self._data_notes["eye-video-eye1"]["frame"],
+                    data_notes=self._data_notes["eye_video_eye1"]["frame"],
                     is_measure_rate_hz=True,
                     is_video=True,
                     color_format=self._pixel_format,
@@ -492,73 +496,73 @@ class PupilCoreStream(Stream):
 
     def get_fps(self) -> dict[str, float | None]:
         fps = {
-            "eye-gaze": super()._get_fps("eye-gaze", "toa_s"),
-            "eye-pupil": super()._get_fps("eye-pupil", "toa_s"),
-            "eye-fixations": super()._get_fps("eye-fixations", "toa_s"),
-            "eye-blinks": super()._get_fps("eye-blinks", "toa_s"),
+            "eye_gaze": super()._get_fps("eye_gaze", "toa_s"),
+            "eye_pupil": super()._get_fps("eye_pupil", "toa_s"),
+            "eye_fixations": super()._get_fps("eye_fixations", "toa_s"),
+            "eye_blinks": super()._get_fps("eye_blinks", "toa_s"),
         }
 
         if self._is_stream_video_world:
-            fps["eye-video-world"] = super()._get_fps("eye-video-world", "frame")
+            fps["eye_video_world"] = super()._get_fps("eye_video_world", "frame")
         if self._is_stream_video_eye:
-            fps["eye-video-eye0"] = super()._get_fps("eye-video-eye0", "frame")
+            fps["eye_video_eye0"] = super()._get_fps("eye_video_eye0", "frame")
             if self._is_binocular:
-                fps["eye-video-eye1"] = super()._get_fps("eye-video-eye1", "frame")
+                fps["eye_video_eye1"] = super()._get_fps("eye_video_eye1", "frame")
         return fps
 
     def _define_data_notes(self) -> None:
         self._data_notes = {}
-        self._data_notes.setdefault("eye-gaze", {})
-        self._data_notes.setdefault("eye-pupil", {})
-        self._data_notes.setdefault("eye-fixations", {})
-        self._data_notes.setdefault("eye-blinks", {})
-        self._data_notes.setdefault("eye-time", {})
-        self._data_notes.setdefault("eye-video-eye0", {})
-        self._data_notes.setdefault("eye-video-eye1", {})
-        self._data_notes.setdefault("eye-video-world", {})
+        self._data_notes.setdefault("eye_gaze", {})
+        self._data_notes.setdefault("eye_pupil", {})
+        self._data_notes.setdefault("eye_fixations", {})
+        self._data_notes.setdefault("eye_blinks", {})
+        self._data_notes.setdefault("eye_time", {})
+        self._data_notes.setdefault("eye_video_eye0", {})
+        self._data_notes.setdefault("eye_video_eye1", {})
+        self._data_notes.setdefault("eye_video_world", {})
 
         # Gaze data
-        self._data_notes["eye-gaze"]["confidence"] = OrderedDict(
+        self._data_notes["eye_gaze"]["confidence"] = OrderedDict(
             [
                 ("Range", "[0, 1]"),
                 ("Description", "Confidence of the gaze detection"),
                 ("PupilCapture key", "gaze.Xd. > confidence"),
             ]
         )
-        self._data_notes["eye-gaze"]["eye_center_3d"] = OrderedDict(
+        self._data_notes["eye_gaze"]["eye_center_3d"] = OrderedDict(
             [
                 ("Units", "mm"),
                 (
                     "Notes",
                     "Maps pupil positions into the world camera coordinate system",
                 ),
-                (Stream.metadata_data_headings_key, ["x", "y", "z"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y", "z"]),
                 ("PupilCapture key", "gaze.3d. > eye_center_3d"),
             ]
         )
-        self._data_notes["eye-gaze"]["normal_3d"] = OrderedDict(
+        self._data_notes["eye_gaze"]["normal_3d"] = OrderedDict(
             [
                 ("Units", "mm"),
                 (
                     "Notes",
                     "Maps pupil positions into the world camera coordinate system",
                 ),
-                (Stream.metadata_data_headings_key, ["x", "y", "z"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y", "z"]),
                 ("PupilCapture key", "gaze.3d. > gaze_normal_3d"),
             ]
         )
-        self._data_notes["eye-gaze"]["point_3d"] = OrderedDict(
+        self._data_notes["eye_gaze"]["point_3d"] = OrderedDict(
             [
                 ("Units", "mm"),
                 (
                     "Notes",
                     "Maps pupil positions into the world camera coordinate system",
                 ),
-                (Stream.metadata_data_headings_key, ["x", "y", "z"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y", "z"]),
                 ("PupilCapture key", "gaze.3d. > gaze_point_3d"),
             ]
         )
-        self._data_notes["eye-gaze"]["position"] = OrderedDict(
+        self._data_notes["eye_gaze"]["position"] = OrderedDict(
             [
                 (
                     "Description",
@@ -566,11 +570,11 @@ class PupilCoreStream(Stream):
                 ),
                 ("Units", "normalized between [0, 1]"),
                 ("Origin", "bottom left"),
-                (Stream.metadata_data_headings_key, ["x", "y"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y"]),
                 ("PupilCapture key", "gaze.Xd. > norm_pos"),
             ]
         )
-        self._data_notes["eye-gaze"]["timestamp"] = OrderedDict(
+        self._data_notes["eye_gaze"]["timestamp"] = OrderedDict(
             [
                 (
                     "Description",
@@ -583,34 +587,34 @@ class PupilCoreStream(Stream):
         )
 
         # Pupil data
-        self._data_notes["eye-pupil"]["confidence"] = OrderedDict(
+        self._data_notes["eye_pupil"]["confidence"] = OrderedDict(
             [
                 ("Range", "[0, 1]"),
                 ("Description", "Confidence of the pupil detection"),
                 ("PupilCapture key", "gaze.Xd. > base_data > confidence"),
             ]
         )
-        self._data_notes["eye-pupil"]["circle3d_center"] = OrderedDict(
+        self._data_notes["eye_pupil"]["circle3d_center"] = OrderedDict(
             [
                 ("Units", "mm"),
-                (Stream.metadata_data_headings_key, ["x", "y", "z"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y", "z"]),
                 ("PupilCapture key", "gaze.Xd. > base_data > circle_3d > center"),
             ]
         )
-        self._data_notes["eye-pupil"]["circle3d_normal"] = OrderedDict(
+        self._data_notes["eye_pupil"]["circle3d_normal"] = OrderedDict(
             [
                 ("Units", "mm"),
-                (Stream.metadata_data_headings_key, ["x", "y", "z"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y", "z"]),
                 ("PupilCapture key", "gaze.Xd. > base_data > circle_3d > normal"),
             ]
         )
-        self._data_notes["eye-pupil"]["circle3d_radius"] = OrderedDict(
+        self._data_notes["eye_pupil"]["circle3d_radius"] = OrderedDict(
             [
                 ("Units", "mm"),
                 ("PupilCapture key", "gaze.Xd. > base_data > circle_3d > radius"),
             ]
         )
-        self._data_notes["eye-pupil"]["diameter"] = OrderedDict(
+        self._data_notes["eye_pupil"]["diameter"] = OrderedDict(
             [
                 ("Units", "pixels"),
                 (
@@ -620,14 +624,14 @@ class PupilCoreStream(Stream):
                 ("PupilCapture key", "gaze.Xd. > base_data > diameter"),
             ]
         )
-        self._data_notes["eye-pupil"]["diameter3d"] = OrderedDict(
+        self._data_notes["eye_pupil"]["diameter3d"] = OrderedDict(
             [
                 ("Units", "mm"),
                 ("Notes", "The estimated pupil diameter in 3D space"),
                 ("PupilCapture key", "gaze.Xd. > base_data > diameter_3d"),
             ]
         )
-        self._data_notes["eye-pupil"]["polar_phi"] = OrderedDict(
+        self._data_notes["eye_pupil"]["polar_phi"] = OrderedDict(
             [
                 (
                     "Notes",
@@ -637,7 +641,7 @@ class PupilCoreStream(Stream):
                 ("PupilCapture key", "gaze.Xd. > base_data > phi"),
             ]
         )
-        self._data_notes["eye-pupil"]["polar_theta"] = OrderedDict(
+        self._data_notes["eye_pupil"]["polar_theta"] = OrderedDict(
             [
                 (
                     "Notes",
@@ -647,7 +651,7 @@ class PupilCoreStream(Stream):
                 ("PupilCapture key", "gaze.Xd. > base_data > theta"),
             ]
         )
-        self._data_notes["eye-pupil"]["position"] = OrderedDict(
+        self._data_notes["eye_pupil"]["position"] = OrderedDict(
             [
                 (
                     "Description",
@@ -655,11 +659,11 @@ class PupilCoreStream(Stream):
                 ),
                 ("Units", "normalized between [0, 1]"),
                 ("Origin", "bottom left"),
-                (Stream.metadata_data_headings_key, ["x", "y"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y"]),
                 ("PupilCapture key", "gaze.Xd. > base_data > norm_pos"),
             ]
         )
-        self._data_notes["eye-pupil"]["projected_sphere_angle"] = OrderedDict(
+        self._data_notes["eye_pupil"]["projected_sphere_angle"] = OrderedDict(
             [
                 (
                     "Description",
@@ -669,7 +673,7 @@ class PupilCoreStream(Stream):
                 ("PupilCapture key", "gaze.Xd. > base_data > projected_sphere > angle"),
             ]
         )
-        self._data_notes["eye-pupil"]["projected_sphere_axes"] = OrderedDict(
+        self._data_notes["eye_pupil"]["projected_sphere_axes"] = OrderedDict(
             [
                 (
                     "Description",
@@ -680,7 +684,7 @@ class PupilCoreStream(Stream):
                 ("PupilCapture key", "gaze.Xd. > base_data > projected_sphere > axes"),
             ]
         )
-        self._data_notes["eye-pupil"]["projected_sphere_center"] = OrderedDict(
+        self._data_notes["eye_pupil"]["projected_sphere_center"] = OrderedDict(
             [
                 (
                     "Description",
@@ -688,29 +692,29 @@ class PupilCoreStream(Stream):
                 ),
                 ("Units", "pixels"),
                 ("Origin", "bottom left"),
-                (Stream.metadata_data_headings_key, ["x", "y"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y"]),
                 (
                     "PupilCapture key",
                     "gaze.Xd. > base_data > projected_sphere > center",
                 ),
             ]
         )
-        self._data_notes["eye-pupil"]["sphere_center"] = OrderedDict(
+        self._data_notes["eye_pupil"]["sphere_center"] = OrderedDict(
             [
                 ("Description", "The 3D eye ball sphere"),
                 ("Units", "mm"),
-                (Stream.metadata_data_headings_key, ["x", "y", "z"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y", "z"]),
                 ("PupilCapture key", "gaze.Xd. > base_data > sphere > center"),
             ]
         )
-        self._data_notes["eye-pupil"]["sphere_radius"] = OrderedDict(
+        self._data_notes["eye_pupil"]["sphere_radius"] = OrderedDict(
             [
                 ("Description", "The 3D eye ball sphere"),
                 ("Units", "mm"),
                 ("PupilCapture key", "gaze.Xd. > base_data > sphere > radius"),
             ]
         )
-        self._data_notes["eye-pupil"]["timestamp"] = OrderedDict(
+        self._data_notes["eye_pupil"]["timestamp"] = OrderedDict(
             [
                 (
                     "Description",
@@ -723,7 +727,7 @@ class PupilCoreStream(Stream):
         )
 
         # Fixations data.
-        self._data_notes["eye-fixations"]["id"] = OrderedDict(
+        self._data_notes["eye_fixations"]["id"] = OrderedDict(
             [
                 (
                     "Description",
@@ -732,7 +736,7 @@ class PupilCoreStream(Stream):
                 ("PupilCapture key", "fixations. > id"),
             ]
         )
-        self._data_notes["eye-fixations"]["timestamp"] = OrderedDict(
+        self._data_notes["eye_fixations"]["timestamp"] = OrderedDict(
             [
                 (
                     "Description",
@@ -743,7 +747,7 @@ class PupilCoreStream(Stream):
                 ("PupilCapture key", "fixations. > timestamp"),
             ]
         )
-        self._data_notes["eye-fixations"]["norm_pos"] = OrderedDict(
+        self._data_notes["eye_fixations"]["norm_pos"] = OrderedDict(
             [
                 (
                     "Description",
@@ -751,52 +755,52 @@ class PupilCoreStream(Stream):
                 ),
                 ("Units", "normalized between [0, 1]"),
                 ("Origin", "bottom left"),
-                (Stream.metadata_data_headings_key, ["x", "y"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y"]),
                 ("PupilCapture key", "fixations. > norm_pos"),
             ]
         )
-        self._data_notes["eye-fixations"]["dispersion"] = OrderedDict(
+        self._data_notes["eye_fixations"]["dispersion"] = OrderedDict(
             [
                 ("Range", ""),
                 ("Description", ""),
                 ("PupilCapture key", "fixations. > dispersion"),
             ]
         )
-        self._data_notes["eye-fixations"]["duration"] = OrderedDict(
+        self._data_notes["eye_fixations"]["duration"] = OrderedDict(
             [
                 ("Range", ""),
                 ("Description", ""),
                 ("PupilCapture key", "fixations. > duration"),
             ]
         )
-        self._data_notes["eye-fixations"]["confidence"] = OrderedDict(
+        self._data_notes["eye_fixations"]["confidence"] = OrderedDict(
             [
                 ("Range", ""),
                 ("Description", ""),
                 ("PupilCapture key", "fixations. > confidence"),
             ]
         )
-        self._data_notes["eye-fixations"]["gaze_point_3d"] = OrderedDict(
+        self._data_notes["eye_fixations"]["gaze_point_3d"] = OrderedDict(
             [
                 ("Units", "mm"),
                 (
                     "Notes",
                     "Maps pupil positions into the world camera coordinate system",
                 ),
-                (Stream.metadata_data_headings_key, ["x", "y", "z"]),
+                (DataContainer.metadata_data_headings_key, ["x", "y", "z"]),
                 ("PupilCapture key", "fixations. > gaze_point_3d"),
             ]
         )
 
         # Blinks data
-        self._data_notes["eye-blinks"]["confidence"] = OrderedDict(
+        self._data_notes["eye_blinks"]["confidence"] = OrderedDict(
             [
                 ("Range", "[0, 1]"),
                 ("Description", "Confidence of the blink detection"),
                 ("PupilCapture key", "blinks. > confidence"),
             ]
         )
-        self._data_notes["eye-blinks"]["timestamp"] = OrderedDict(
+        self._data_notes["eye_blinks"]["timestamp"] = OrderedDict(
             [
                 (
                     "Description",
@@ -809,7 +813,7 @@ class PupilCoreStream(Stream):
         )
 
         # Time
-        self._data_notes["eye-time"]["device_time_s"] = OrderedDict(
+        self._data_notes["eye_time"]["device_time_s"] = OrderedDict(
             [
                 (
                     "Description",
@@ -823,7 +827,7 @@ class PupilCoreStream(Stream):
 
         # Eye videos
         for i in range(2):
-            self._data_notes["eye-video-eye%s" % i]["frame_timestamp"] = OrderedDict(
+            self._data_notes["eye_video_eye%s" % i]["frame_timestamp"] = OrderedDict(
                 [
                     (
                         "Description",
@@ -833,7 +837,7 @@ class PupilCoreStream(Stream):
                     ),
                 ]
             )
-            self._data_notes["eye-video-eye%s" % i]["frame_index"] = OrderedDict(
+            self._data_notes["eye_video_eye%s" % i]["frame_index"] = OrderedDict(
                 [
                     (
                         "Description",
@@ -841,7 +845,7 @@ class PupilCoreStream(Stream):
                     ),
                 ]
             )
-            self._data_notes["eye-video-eye%s" % i]["frame_sequence_id"] = OrderedDict(
+            self._data_notes["eye_video_eye%s" % i]["frame_sequence_id"] = OrderedDict(
                 [
                     (
                         "Description",
@@ -850,13 +854,13 @@ class PupilCoreStream(Stream):
                     ),
                 ]
             )
-            self._data_notes["eye-video-eye%s" % i]["frame"] = OrderedDict(
+            self._data_notes["eye_video_eye%s" % i]["frame"] = OrderedDict(
                 [
                     ("Format", "Frames are in BGR format"),
                 ]
             )
         # World video
-        self._data_notes["eye-video-world"]["frame_timestamp"] = OrderedDict(
+        self._data_notes["eye_video_world"]["frame_timestamp"] = OrderedDict(
             [
                 (
                     "Description",
@@ -866,7 +870,7 @@ class PupilCoreStream(Stream):
                 ),
             ]
         )
-        self._data_notes["eye-video-world"]["frame_index"] = OrderedDict(
+        self._data_notes["eye_video_world"]["frame_index"] = OrderedDict(
             [
                 (
                     "Description",
@@ -874,7 +878,7 @@ class PupilCoreStream(Stream):
                 ),
             ]
         )
-        self._data_notes["eye-video-world"]["frame_sequence_id"] = OrderedDict(
+        self._data_notes["eye_video_world"]["frame_sequence_id"] = OrderedDict(
             [
                 (
                     "Description",
@@ -883,7 +887,7 @@ class PupilCoreStream(Stream):
                 ),
             ]
         )
-        self._data_notes["eye-video-world"]["frame"] = OrderedDict(
+        self._data_notes["eye_video_world"]["frame"] = OrderedDict(
             [
                 ("Format", "Frames are in BGR format"),
             ]
