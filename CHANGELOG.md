@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 <!-- insertion marker -->
+## [0.2.1](https://github.com/maximyudayev/hermes-pupillabs/releases/tag/0.2.1) - 2026-06-28
+
+<small>[Compare with 0.2.0](https://github.com/maximyudayev/hermes-pupillabs/compare/0.2.0...0.2.1)</small>
+
+### Bug Fixes
+
+- Piping jpeg frames to ffmpeg malforms arrays ([caddc68](https://github.com/maximyudayev/hermes-pupillabs/commit/9b3c6005df7479ee894467856b46a31fafb32d53) by Maxim Yudayev).
+
 ## [0.2.0](https://github.com/maximyudayev/hermes-pupillabs/releases/tag/0.2.0) - 2026-06-17
 
 <small>[Compare with 0.1.1](https://github.com/maximyudayev/hermes-pupillabs/compare/0.1.1...0.2.0)</small>
